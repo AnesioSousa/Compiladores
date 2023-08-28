@@ -6,6 +6,11 @@ DEL delimitador
 REL operador relacional
 LOG operador logico
 ART operador aritmetico
+
+
+
+
+---------------ERRROSS--------------------------------
 CMF cadeia mal formada
 CoMF comentário mal formado
 NMF numero mal formado
