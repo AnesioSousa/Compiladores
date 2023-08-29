@@ -2,14 +2,20 @@ class LexicalAnalyser:
     def __init__(self):
         self.__token_list = []
         self.__error_list = []
-        # Matriz de transição
+        # Matriz de transição ---9,  9,  
         self.__transition = {
             #  [0, 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,     26,  27]
             #  [L, D,  _,  +,  -,  *,  /,  !,  =,  <,  &,  |,  >,  ;,  ,,  .,  (,  ),  [,  ],  {,  },  ",   , \n, \t, outros, EOF]
-            0: [1, 3,  0,  8, 12, 17, 18, 25, 28, 31, 37, 40, 34, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,  0,  0,  0,     41,   0],
+            0: [1, 3,  0,  8, 12, 17, 18, 25, 28, 31, 37, 40, 34, 16, 16, 16, 16, 16, 16, 16, 16, 16, 51,  0,  0,  0,     41,   0],
             1: [1, 1,  1,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54,  2,  2,      2,   0],
             2: [2, 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 41, 41,      2,   0],
-
+            3: [56,3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,      4,   0],
+            5: [56,6, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56,     56,   0],
+            6: [56,6,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,      7,   0],
+            8: [9, 9,  9, 11,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,      9,   0],
+           12: [13,13,13, 13, 11, 13, 13, 13, 13, 13, 13, 13, 16, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,     13,   0],
+           
+            
         }
         self.__reserved_words = [
             "variables", "const", "class", "methods",
@@ -17,13 +23,16 @@ class LexicalAnalyser:
             "then", "for", "read", "print", "void", "int",
             "real", "boolean", "string", "true", "false"
         ]
+        
         self.__exit_states = {
-            54: "IDE",   42: "DEL"
+            54: "IDE",   16: "DEL", 52: "CAC", 7: "NRO", 27:"REL", 26:"LOG", 9: "ART", 4: "NRO", 11:"ART"
         }
         self.__error_states = {
             53: "CMF", 56: "NMF", 57: "CoMF", 41: "TMF", 55: "IMF",
         }
-        self.__retro_states = [54, 55]
+        # Não tô lidando com números negativos!!!
+        # NRO, ART, REL e LOG podem ser retrocessos ou não! - Possível solução: Tomar como estados diferentes. (gera mais estados no final)
+        self.__retro_states = [54, 55, 26, 4, 9]
 
     def token_list(self):
         return self.__token_list
