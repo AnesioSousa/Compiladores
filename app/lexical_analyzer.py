@@ -2,7 +2,7 @@ class LexicalAnalyser:
     def __init__(self):
         self.__token_list = []
         self.__error_list = []
-        # Matriz de transição ---9,  9,  
+        # Matriz de transição 
         self.__transition = {
             #  [0, 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,     26,  27]
             #  [L, D,  _,  +,  -,  *,  /,  !,  =,  <,  &,  |,  >,  ;,  ,,  .,  (,  ),  [,  ],  {,  },  ",   , \n, \t, outros, EOF]
@@ -41,7 +41,7 @@ class LexicalAnalyser:
             53: "CMF", 56: "NMF", 57: "CoMF", 41: "TMF", 55: "IMF",
         }
         # Não tô lidando com números negativos!!!
-        # NRO, ART, REL e LOG podem ser retrocessos ou não! - Possível solução: Tomar como estados diferentes. (gera mais estados no final)
+        # Criar um estado de duplo retrocesso devido ao delimitador '->'
         self.__retro_states = [54, 55, 26, 4, 9,29]
 
     def token_list(self):
@@ -115,6 +115,16 @@ class LexicalAnalyser:
             for line in file:
                 yield line
 
+    # token_list, error_list
+    def __generate_output_files(self):
+        with open("../files/outputs/saida.txt", 'w') as f:
+            for token in self.__token_list:
+                f.write(f"{token['number_line']} {token['token_type']} {token['lexeme']}\n")
+            f.write("\n")
+            for token in self.__error_list:
+                f.write(f"{token['number_line']} {token['token_type']} {token['lexeme']}\n")
+
+
     def scanner(self, path_to_input_file):
         line_counter = 1
         current_state = 0
@@ -126,7 +136,7 @@ class LexicalAnalyser:
                 char = line[char_counter]
                 lexeme += char
                 coluna = self.__get_column(char)
-                print(f"Caractere: {char} - Indice coluna: {coluna} - Estado atual: {current_state}")
+                #print(f"Caractere: {char} - Indice coluna: {coluna} - Estado atual: {current_state}")
 
                 current_state = self.__transition[int(current_state)][int(coluna)]
 
@@ -136,15 +146,23 @@ class LexicalAnalyser:
                         lexeme = lexeme[:-1].strip()
 
                     if current_state in self.__error_states:
-                        self.__error_list.append(
-                            {"{:02}".format(line_counter), self.__error_states[current_state], lexeme})
+                        self.__error_list.append({
+                            "number_line":"{:02}".format(line_counter), 
+                            "token_type":self.__error_states[current_state], 
+                            "lexeme": lexeme
+                        })
                     else:
-                        self.__token_list.append(
-                            {"{:02}".format(line_counter), self.__exit_states[current_state], lexeme})
+                        self.__token_list.append({
+                            "number_line":"{:02}".format(line_counter),
+                            "token_type":"PRE" if lexeme in self.__reserved_words else self.__exit_states[current_state],
+                            "lexeme": lexeme
+                        })
                     current_state = 0
                     lexeme = ""
                 char_counter += 1
             line_counter += 1
+            
+        self.__generate_output_files()
 
 
 """
@@ -155,7 +173,5 @@ Depois grava essa lista num arquivo txt de saída
 # IDÉIA: Usar argparse aqui
 if __name__ == "__main__":
     my_analyser = LexicalAnalyser()
-    my_analyser.scanner("./entrada_exemplo_teste_lexico.txt")
-    print(my_analyser.token_list())
-    print("---------------------------------------------------------------------------")
-    print(my_analyser.error_list())
+    my_analyser.scanner("../files/inputs/entrada_exemplo_teste_lexico.txt")# Tem que pegar tudo o que tá lá (lembrando do formato que ele pediu)
+
