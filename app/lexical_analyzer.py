@@ -36,10 +36,52 @@ class LexicalAnalyser:
             return 1
         elif character == "_":
             return 2
-        elif character == " ":
-            return 23
+        elif character == "+":
+            return 3
+        elif character == "-":
+            return 4
+        elif character == "*":
+            return 5
+        elif character == "/":
+            return 6
+        elif character == "!":
+            return 7
+        elif character == "=":
+            return 8
+        elif character == "<":
+            return 9
+        elif character == "&":
+            return 10
+        elif character == "|":
+            return 11
+        elif character == ">":
+            return 12
         elif character == ";":
             return 13
+        elif character == ",":
+            return 14
+        elif character == ".":
+            return 15
+        elif character == "(":
+            return 16
+        elif character == ")":
+            return 17
+        elif character == "[":
+            return 18
+        elif character == "]":
+            return 19
+        elif character == "{":
+            return 20
+        elif character == "}":
+            return 21
+        elif character == '"':
+            return 22
+        elif character == " ":
+            return 23
+        elif character == "\n":
+            return 24
+        elif character == "\t":
+            return 25
         else:
             return 26
 
@@ -62,12 +104,10 @@ class LexicalAnalyser:
                 char = line[char_counter]
                 lexeme += char
                 coluna = self.__get_column(char)
-                print(f"{char} ", end='')
-                print(coluna)
+                print(f"Caractere: {char} - Indice coluna: {coluna} - Estado atual: {current_state}")
 
-                current_state = self.__transition[int(
-                    current_state)][int(coluna)]
-                print(current_state)
+                current_state = self.__transition[int(current_state)][int(coluna)]
+
                 if current_state in (self.__exit_states | self.__error_states):
                     if current_state in self.__retro_states:
                         char_counter -= 1
