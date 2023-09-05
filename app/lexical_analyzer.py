@@ -36,7 +36,8 @@ class LexicalAnalyser:
             "variables", "const", "class", "methods",
             "objects", "main", "return", "if", "else",
             "then", "for", "read", "print", "void", "int",
-            "real", "boolean", "string", "true", "false"
+            "real", "boolean", "string", "true", "false",
+            "true", "constructor"
         ]
 
         self.__exit_states = {
