@@ -189,4 +189,4 @@ class LexicalAnalyser:
 
 if __name__ == "__main__":
     my_analyser = LexicalAnalyser()
-    my_analyser.scanner("../files/entrada_exemplo_teste_lexico.txt")
+    my_analyser.scanner("../files/teste01_identificadores.txt")
