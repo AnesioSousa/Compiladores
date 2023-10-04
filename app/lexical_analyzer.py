@@ -127,19 +127,42 @@ class LexicalAnalyser:
                     f"{token['number_line']} {token['token_type']} {token['lexeme']}\n")
 
     def scanner(self, path_to_input_file):
+        """
+        filtered_mod_lines = []
+        for item in mod_lines:
+            if item:  # Isso verifica se a linha não está vazia
+                # Adiciona um ';' se a linha não termina com um
+                if not item.endswith(';'):
+                    item += ';'
+                filtered_mod_lines.append(item)
+        
+        
+        """
+        input = open(path_to_input_file, 'r')
+        lines = input.read()
+        
+        
+        mod_lines = lines.splitlines()
+        filtered_mod_lines = [item for item in mod_lines if item != '']
+        #mod_lines_rejoined = ''.join(filtered_mod_lines)
+        
+        print(filtered_mod_lines)
+         
         line_counter = 1
         current_state = 0
         lexeme = ""
 
-        for line in self.__read_lines(path_to_input_file):
-            #print(line, end='')
+        for line in filtered_mod_lines:
             char_counter = 0
             while char_counter < len(line):
                 char = line[char_counter]
-                print(char, end='')
+                #print(char, end='')
+                
+                lexeme += char
 
                 coluna = self.__get_column(char)
                 current_state = self.__transition[int(current_state)][int(coluna)]
+                #print(f'{current_state} ', end='')
 
                 if current_state in (self.__exit_states | self.__error_states):
                     if current_state in self.__retro_states:
@@ -164,10 +187,8 @@ class LexicalAnalyser:
                 elif current_state == 0:
                     lexeme = ""
                 char_counter += 1
+            current_state = 0
             line_counter += 1
-        
-        #tem que veificar o estado atual aqui e atualizá-lo de acordo.
-        #if current_state == 
         
         self.__generate_output_files()
 
