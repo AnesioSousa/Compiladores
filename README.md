@@ -13,11 +13,11 @@
 
 # Sobre o projeto:
 
-Universidade Estadual de Feira de Santana
-Departamento de Tecnologia (DTEC)
-Departamento de Ciências Exatas (DEXA)
-EXA869 - MI - PROCESSADORES DE LINGUAGEM DE PROGRAMAÇÃO
-TP02 :: UEFS, MÓDULO 5, Sala MP51C
+Universidade Estadual de Feira de Santana<br>
+Departamento de Tecnologia (DTEC)<br>
+Departamento de Ciências Exatas (DEXA)<br>
+EXA869 - MI - PROCESSADORES DE LINGUAGEM DE PROGRAMAÇÃO<br>
+TP02 :: UEFS, MÓDULO 5, Sala MP51C<br>
 
 Introdução
 
