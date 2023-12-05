@@ -7,17 +7,17 @@ class LexicalAnalyser:
         self.__error_list = []
         # Matriz de transição
         self.__transition = {
-             #  [0,   1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,         26]
-             #  [L,   D,  _,  +,  -,  *,  /,  !,  =,  <,  &,  |,  >,  ;,  ,,  .,  (,  ),  [,  ],  {,  },  ",   , \n, \t, indefinido]
-             0: [ 1,  3,  63,  8, 12, 11, 18, 25, 28, 31, 37, 40, 34, 16, 16, 16, 16, 16, 16, 16, 16, 16, 51,  0,  0,  0,         41],
-             1: [ 1,  1,  1, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54,          2],
-             2: [ 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 41, 41,          2],
-             3: [ 4,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,         62],
-             5: [ 6,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  6,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,          6],
-             6: [ 6,  6, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59,  6, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59,          6],
-             8: [ 9,  9,  9, 11,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,          9],
-            12: [ 9,  9,  9,  9, 11,  9,  9,  9,  9,  9,  9,  9, 16,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,          9],
-            18: [ 9,  9,  9,  9,  9, 22, 20,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,          9],
+            #  [0,   1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,         26]
+            #  [L,   D,  _,  +,  -,  *,  /,  !,  =,  <,  &,  |,  >,  ;,  ,,  .,  (,  ),  [,  ],  {,  },  ",   , \n, \t, indefinido]
+            0: [1,  3,  63,  8, 12, 11, 18, 25, 28, 31, 37, 40, 34, 16, 16, 16, 16, 16, 16, 16, 16, 16, 51,  0,  0,  0,         41],
+            1: [1,  1,  1, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54,          2],
+            2: [2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 41, 41,          2],
+            3: [4,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,         62],
+            5: [6,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  6,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,          6],
+            6: [6,  6, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59,  6, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59,          6],
+            8: [9,  9,  9, 11,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,          9],
+            12: [9,  9,  9,  9, 11,  9,  9,  9,  9,  9,  9,  9, 16,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,          9],
+            18: [9,  9,  9,  9,  9, 22, 20,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,          9],
             20: [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 22, 20,  0, 20,         20],
             22: [22, 22, 22, 22, 22, 23, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,         22],
             23: [22, 22, 22, 22, 22, 22,  0, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,         57],
@@ -30,7 +30,7 @@ class LexicalAnalyser:
             51: [51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 52, 51, 53, 51,         60],
             58: [58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 59, 59, 58, 59, 59, 59, 59, 59, 59, 58, 59, 58, 58,         58],
             60: [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 53, 60, 53, 60,         60],
-            62: [ 6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,          6],
+            62: [6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,          6],
             63: [63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,         41],
         }
         self.__reserved_words = [
@@ -54,7 +54,7 @@ class LexicalAnalyser:
         return self.__token_list
 
     def __get_column(self, character):
-        #print(character)
+        # print(character)
         ascii_value = ord(character)
         if (ascii_value >= 65 and ascii_value <= 90) or (ascii_value >= 97 and ascii_value <= 122):
             return 0
@@ -124,7 +124,7 @@ class LexicalAnalyser:
     def scanner(self, path_to_input_file):
         input = open(path_to_input_file, 'r')
         lines = input.readlines()
-    
+
         filtered_mod_lines = []
         for item in lines:
             if item:  # Isso verifica se a linha não está vazia
@@ -133,18 +133,19 @@ class LexicalAnalyser:
         line_counter = 1
         current_state = 0
         lexeme = ""
-        #print(filtered_mod_lines)
+        # print(filtered_mod_lines)
         for line in filtered_mod_lines:
             char_counter = 0
             while char_counter < len(line):
                 char = line[char_counter]
-                #print(char, end='')
-                
+                # print(char, end='')
+
                 lexeme += char
 
                 coluna = self.__get_column(char)
-                current_state = self.__transition[int(current_state)][int(coluna)]
-                #print(f'Estado: {current_state} | Linha:{line_counter}')
+                current_state = self.__transition[int(
+                    current_state)][int(coluna)]
+                # print(f'Estado: {current_state} | Linha:{line_counter}')
 
                 if current_state in (self.__exit_states | self.__error_states):
                     if current_state in self.__retro_states:
@@ -166,23 +167,23 @@ class LexicalAnalyser:
                         })
                     current_state = 0
                     lexeme = ""
-                    
+
                 elif current_state == 0:
                     lexeme = ""
                 char_counter += 1
-            
-            #current_state = 0
+
+            # current_state = 0
             line_counter += 1
-         #Resolve a falta do'*/' para fechar comentário de bloco
+         # Resolve a falta do'*/' para fechar comentário de bloco
         if current_state == 22:
             line_counter -= 1
             filtered_lexeme = lexeme.replace('\n', '').rstrip()
             self.__error_list.append({
-                            "number_line": "{:02}".format(line_counter),
-                            "token_type": self.__error_states[57],
-                            "lexeme": filtered_lexeme
-                        })
-        
+                "number_line": "{:02}".format(line_counter),
+                "token_type": self.__error_states[57],
+                "lexeme": filtered_lexeme
+            })
+
         self.__generate_output_files()
 
 
