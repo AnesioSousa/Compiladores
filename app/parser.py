@@ -4,23 +4,6 @@ EXA869 - MI - PROCESSADORES DE LINGUAGEM DE PROGRAMAÇÃO - TP02 - 2023.2
 Autor: Anésio Neto 
 Docente: Matheus Pires
 """
-# Tem que fazer uma função (ou método) para cada não terminal. Desde <program> até <boolean>.
-
-# from lexer import LexicalAnalyser
-
-tokens = [
-    {
-        "line": "01",
-        "type": "IDE",
-        "lexeme": "exemplo"
-    },
-    {
-        "line": "01",
-        "type": "DEL",
-        "lexeme": ";"
-    },
-]
-
 
 class GoatParser:
     """
@@ -72,7 +55,6 @@ class GoatParser:
             return self.constant_alt()
         # Pode ser vazio
         return True
-
     
     def constant_alt(self):
         if self.constant_alt_mtrz() and self.ide():
@@ -100,10 +82,6 @@ class GoatParser:
         
         # pode ser vazio
         return True
-                
-            
-                
-        
         
     def assignment_value(self):
         if self.ide():
@@ -131,26 +109,6 @@ class GoatParser:
             return True
         #Rever isso aqui!
         return False
-    
-    def constalt(self):
-        if self.ide():
-            if self.varinit():
-                return self.constcont()
-        return False
-    
-    def constcont(self):
-        if self._lookahead['lexeme'] == ',':
-            self.match(',')
-            return self.constalt()
-        elif self._lookahead['lexeme'] == ';':
-            self.match(';')
-            return self.constfim()
-        return False
-
-    def constfim(self):
-        if self._lookahead['lexeme'] == '}':
-            return self.match('}')
-        return self.constant() # Strange
 
     def ide(self):
         if self._lookahead['token_type'] == 'IDE':
@@ -178,13 +136,6 @@ class GoatParser:
 
         return True
     
-    def varinit(self):
-        if self._lookahead['lexeme'] == '=':
-            self.match('=')
-            return self.value()
-        return True
-    
-
     
     def array(self):
         if self._lookahead['lexeme'] == '[':
