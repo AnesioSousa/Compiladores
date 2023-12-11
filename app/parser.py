@@ -30,21 +30,21 @@ class GoatParser:
 
     def __init__(self, input_tokens=[], pathof_output_file=None):
         self._input_tokens = input_tokens
-        self._ouput_file = pathof_output_file
-        self._lookahead = self._input_tokens[0]  # input[0]
+        self._output_file = pathof_output_file
+        self._lookahead = self._input_tokens[0]
+        #print(self._lookahead)
         self._char_counter = 0
         self.symbol_table = []
         self.last_type = None
-
+    
     def run(self):
-        ans = False
         if self._lookahead['lexeme'] == 'const':
             self.match('const')
             ans = self.constant_block()  # and self.b()
         return ans
 
     def match(self, symbol):
-        if symbol == self.lookahead['lexeme']:
+        if symbol == self._lookahead['lexeme']:
             self._lookahead = self.le_token()
             return True
         else:
@@ -57,46 +57,66 @@ class GoatParser:
         return self._input_tokens[self._char_counter]
 
     def constant_block(self):
-        if self.lookahead['lexeme'] == 'const':
-            pass
+        if self._lookahead['lexeme'] == '{':
+            self.match('{')
+            return self.constant()
 
     def constant(self):
-        if self.lookahead['lexeme'] == '{':
-            self.match('{')
-            return self.const()
+        if self.type():
+            return self.constalt()
+        return False
+    
+    def constalt(self):
+        if self.ide():
+            if self.varinit():
+                return True
         return False
 
-    def const(self):
-        if self.tipo():
-            pass
-
+    def ide(self):
+        if self._lookahead['token_type'] == 'IDE':
+            self.last_ide = self._lookahead['lexeme']
+            self.match(self._lookahead['lexeme'])
+            return True
         return False
 
     def type(self):
-        if self.lookahead['lexeme'] == 'int':
+        if self._lookahead['lexeme'] == 'int':
             # LETOKEN
             self.last_type = 'int'
             self.match('int')
-        elif self.lookahead['lexeme'] == 'string':
+        elif self._lookahead['lexeme'] == 'string':
             self.last_type = 'string'
             self.match('string')
-        elif self.lookahead['lexeme'] == 'boolean':
+        elif self._lookahead['lexeme'] == 'boolean':
             self.last_type = 'boolean'
             self.match('boolean')
-        elif self.lookahead['lexeme'] == 'real':
+        elif self._lookahead['lexeme'] == 'real':
             self.last_type = 'real'
             self.match('real')
         else:
             return False  # ERRO
 
         return True
+    
+    def varinit(self):
+        if self._lookahead['lexeme'] == '=':
+            self.match('=')
+            return self.valor()
+        return True
 
-
-if __name__ == "__main__":
-    input = open("../files/teste.txt", encoding="UTF-8")
-    lines = input.readlines()
-    myParser = GoatParser(input_tokens=lines)
-    if (myParser.run()):
-        print("Success!!")
-
-    print("Error!!")
+    def valor(self):
+        if self._lookahead['token_type'] == 'NRO':
+            return self.nro()
+        return False
+    
+    def follow(self, k=1):
+        return self._input_tokens[self.i+k]
+    
+    def nro(self):
+        if self._lookahead['token_type'] == 'NRO':
+            self.match(self._lookahead['lexeme'])
+            return True
+        
+        return False
+    
+    
