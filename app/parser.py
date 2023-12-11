@@ -38,6 +38,7 @@ class GoatParser:
         self.last_type = None
     
     def run(self):
+        ans = True
         if self._lookahead['lexeme'] == 'const':
             self.match('const')
             ans = self.constant_block()  # and self.b()
@@ -59,11 +60,76 @@ class GoatParser:
     def constant_block(self):
         if self._lookahead['lexeme'] == '{':
             self.match('{')
-            return self.constant()
+            if self.constant():
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
+            else:
+                return False
+        return True
 
     def constant(self):
         if self.type():
-            return self.constalt()
+            return self.constant_alt()
+        # Pode ser vazio
+        return True
+
+    
+    def constant_alt(self):
+        if self.constant_alt_mtrz() and self.ide():
+            if self._lookahead['lexeme'] == '=':
+                self.match('=')
+                if self.assignment_value() and self.constant_same_line():
+                    if self._lookahead['lexeme'] == ';':
+                        self.match(';')
+                        return self.constant()  
+                else:
+                    return False
+        else:
+                return False
+            
+        
+    def constant_alt_mtrz(self):
+        if self._lookahead['lexeme'] == '[':
+            self.match('[')
+            if self.nro():
+                if self._lookahead['lexeme'] == ']':
+                    self.match(']')
+                    return True
+            else:
+                return False
+        
+        # pode ser vazio
+        return True
+                
+            
+                
+        
+        
+    def assignment_value(self):
+        if self.ide():
+            return self.object_value()
+        elif self.value():
+            return True
+        elif self.array():
+            return True
+        #fazer CAC
+        return False
+    
+    def value(self):
+        if self._lookahead['token_type'] == 'NRO':
+            return self.nro()
+        return False
+    
+    def constant_same_line(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    return self.assignment_value() and self.constant_same_line()
+        else:
+            return True
+        #Rever isso aqui!
         return False
     
     def constalt(self):
@@ -115,10 +181,32 @@ class GoatParser:
     def varinit(self):
         if self._lookahead['lexeme'] == '=':
             self.match('=')
-            return self.valor()
+            return self.value()
         return True
+    
 
-    def valor(self):
+    
+    def array(self):
+        if self._lookahead['lexeme'] == '[':
+            self.match('[')
+            return self.array_value() and self.more_array_value()
+        
+    def array_value(self):
+        if self.possible_value():
+            pass
+        elif self.array():
+            pass
+        
+        return False
+
+    def object_value(self):
+        if self._lookahead['lexeme'] == '.':
+            self.match('.')
+            return self.ide()
+        
+        return True
+        
+    def value(self):
         if self._lookahead['token_type'] == 'NRO':
             return self.nro()
         return False
@@ -133,4 +221,11 @@ class GoatParser:
         
         return False
     
-    
+    def possible_value(self):
+        if self._lookahead['token_type'] == 'IDE':
+            self.match(self.lookahead['lexeme'])
+            return self.object_value()
+        elif self.value():
+            return True
+        
+        return True
