@@ -11,7 +11,7 @@ class LexicalAnalyser:
             #  [L,   D,  _,  +,  -,  *,  /,  !,  =,  <,  &,  |,  >,  ;,  ,,  .,  (,  ),  [,  ],  {,  },  ",   , \n, \t, indefinido]
             0: [1,  3,  63,  8, 12, 11, 18, 25, 28, 31, 37, 40, 34, 16, 16, 16, 16, 16, 16, 16, 16, 16, 51,  0,  0,  0,         41],
             1: [1,  1,  1, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54,          2],
-            2: [2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 41, 41,          2],
+            2: [2,  2,  2,2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 41, 41,          2],
             3: [4,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,         62],
             5: [6,  5,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  6,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,          6],
             6: [6,  6, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59,  6, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59,          6],
@@ -112,6 +112,19 @@ class LexicalAnalyser:
             return 26
 
     def __generate_output_files(self):
+        self.__token_list.append('\n')
+        
+        self.__token_list.extend(self.__error_list.__iter__())
+        
+        return self.__token_list
+
+        """
+                number_line, token_type, lexeme = self._input_tokens[0].split() 
+        self._lookahead = {"number_line": number_line, "token_type": token_type, "lexeme": lexeme} 
+        
+         for token in self.__token_list:
+            self._lookahead = {"number_line": number_line, "token_type": token_type, "lexeme": lexeme}  
+             
         with open("../files/outputs/saida.txt", 'w') as f:
             for token in self.__token_list:
                 f.write(
@@ -120,8 +133,15 @@ class LexicalAnalyser:
             for token in self.__error_list:
                 f.write(
                     f"{token['number_line']} {token['token_type']} {token['lexeme']}\n")
+        """
 
-    def scanner(self, path_to_input_file):
+
+    def scanner(self, path_to_input_file: str) -> list:
+        """
+        Method responsible for scanning a input file and returning a txt file containing a token sequence
+        
+        :param path_to_input_file: URL path to input file
+        """
         input = open(path_to_input_file, 'r')
         lines = input.readlines()
 
@@ -184,9 +204,4 @@ class LexicalAnalyser:
                 "lexeme": filtered_lexeme
             })
 
-        self.__generate_output_files()
-
-
-if __name__ == "__main__":
-    my_analyser = LexicalAnalyser()
-    my_analyser.scanner("../files/teste.txt")
+        return self.__generate_output_files()
