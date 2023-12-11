@@ -69,8 +69,22 @@ class GoatParser:
     def constalt(self):
         if self.ide():
             if self.varinit():
-                return True
+                return self.constcont()
         return False
+    
+    def constcont(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            return self.constalt()
+        elif self._lookahead['lexeme'] == ';':
+            self.match(';')
+            return self.constfim()
+        return False
+
+    def constfim(self):
+        if self._lookahead['lexeme'] == '}':
+            return self.match('}')
+        return self.constant() # Strange
 
     def ide(self):
         if self._lookahead['token_type'] == 'IDE':
