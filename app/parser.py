@@ -5,6 +5,7 @@ Autor: Anésio Neto
 Docente: Matheus Pires
 """
 
+
 class GoatParser:
     """
     Classe que possibilita a criação de objetos
@@ -15,12 +16,12 @@ class GoatParser:
         self._input_tokens = input_tokens
         self._output_file = pathof_output_file
         self._lookahead = self._input_tokens[0]
-        #print(self._lookahead)
+        # print(self._lookahead)
         self._token_counter = 0
         self.symbol_table = []
         self.last_type = None
-    
-    def run(self):
+
+    def run_program(self):
         ans = True
         if self._lookahead['lexeme'] == 'const':
             self.match('const')
@@ -55,7 +56,7 @@ class GoatParser:
             return self.constant_alt()
         # Pode ser vazio
         return True
-    
+
     def constant_alt(self):
         if self.constant_alt_mtrz() and self.ide():
             if self._lookahead['lexeme'] == '=':
@@ -63,13 +64,12 @@ class GoatParser:
                 if self.assignment_value() and self.constant_same_line():
                     if self._lookahead['lexeme'] == ';':
                         self.match(';')
-                        return self.constant()  
+                        return self.constant()
                 else:
                     return False
         else:
-                return False
-            
-        
+            return False
+
     def constant_alt_mtrz(self):
         if self._lookahead['lexeme'] == '[':
             self.match('[')
@@ -79,10 +79,10 @@ class GoatParser:
                     return True
             else:
                 return False
-        
+
         # pode ser vazio
         return True
-        
+
     def assignment_value(self):
         if self.ide():
             return self.object_value()
@@ -90,14 +90,9 @@ class GoatParser:
             return True
         elif self.array():
             return True
-        #fazer CAC
+        # fazer CAC
         return False
-    
-    def value(self):
-        if self._lookahead['token_type'] == 'NRO':
-            return self.nro()
-        return False
-    
+
     def constant_same_line(self):
         if self._lookahead['lexeme'] == ',':
             self.match(',')
@@ -107,7 +102,7 @@ class GoatParser:
                     return self.assignment_value() and self.constant_same_line()
         else:
             return True
-        #Rever isso aqui!
+        # Rever isso aqui!
         return False
 
     def ide(self):
@@ -135,48 +130,49 @@ class GoatParser:
             return False  # ERRO
 
         return True
-    
-    
+
     def array(self):
         if self._lookahead['lexeme'] == '[':
             self.match('[')
             return self.array_value() and self.more_array_value()
-        
+
     def array_value(self):
         if self.possible_value():
             pass
         elif self.array():
             pass
-        
+
         return False
 
     def object_value(self):
         if self._lookahead['lexeme'] == '.':
             self.match('.')
             return self.ide()
-        
+
         return True
-        
+
     def value(self):
         if self._lookahead['token_type'] == 'NRO':
             return self.nro()
+        elif self._lookahead['token_type'] == 'CAC':
+            return self.match(self._lookahead['lexeme'])
         return False
-    
+
     def follow(self, k=1):
         return self._input_tokens[self.i+k]
-    
+
     def nro(self):
         if self._lookahead['token_type'] == 'NRO':
             self.match(self._lookahead['lexeme'])
             return True
-        
+
         return False
-    
+
     def possible_value(self):
         if self._lookahead['token_type'] == 'IDE':
             self.match(self.lookahead['lexeme'])
             return self.object_value()
         elif self.value():
             return True
-        
+
         return True
