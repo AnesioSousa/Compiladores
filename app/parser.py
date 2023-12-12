@@ -3,6 +3,16 @@ Universidade Estadual de Feira de Santana
 EXA869 - MI - PROCESSADORES DE LINGUAGEM DE PROGRAMAÇÃO - TP02 - 2023.2
 Autor: Anésio Neto 
 Docente: Matheus Pires
+
+
+const { 
+    int MAX = 10, MIN = 0;
+    real soma = 33.85;
+    string[50] msg = "TESTE", msg2 = "oi";
+    int nro = objeto.idade;
+    real[50] valor = objeto.valor, juros = 27.5;
+}
+
 """
 
 
@@ -12,27 +22,37 @@ class GoatParser:
     capazes de gerar árvores sintáticas partindo de tokens de entrada.
     """
 
-    def __init__(self, input_tokens=[], pathof_output_file=None):
+    def __init__(self, input_tokens=[]):
         self._input_tokens = input_tokens
-        self._output_file = pathof_output_file
         self._lookahead = self._input_tokens[0]
-        # print(self._lookahead)
         self._token_counter = 0
-        self.symbol_table = []
-        self.last_type = None
 
-    def run_program(self):
+    def declarations(self):
         ans = True
         if self._lookahead['lexeme'] == 'variables':
             self.match('variables')
-            ans = self.variables() and self.a()
+            ans = self.variables()#and self.a()
         elif self._lookahead['lexeme'] == 'const':
             self.match('const')
             ans = self.constant_block()  # and self.b()
         return ans
 
     def variables(self):
-        pass
+        self.match('{')
+        self.variable_declaration()
+        while self._lookahead['lexeme'] == ',':
+            self.match(',')
+            self.variable_declaration()
+        self.match('}')
+        print("Variables parsed successfully.")
+        
+    def variable_declaration(self):
+        self.type()
+        self.match('ID')
+        if self._lookahead['lexeme'] == '=':
+            self.match('=')
+            #self.expression()
+        self.match(';')
 
     def a(self):
         ans = False
@@ -130,24 +150,18 @@ class GoatParser:
 
     def ide(self):
         if self._lookahead['token_type'] == 'IDE':
-            self.last_ide = self._lookahead['lexeme']
             self.match(self._lookahead['lexeme'])
             return True
         return False
 
     def type(self):
         if self._lookahead['lexeme'] == 'int':
-            # LETOKEN
-            self.last_type = 'int'
             self.match('int')
         elif self._lookahead['lexeme'] == 'string':
-            self.last_type = 'string'
             self.match('string')
         elif self._lookahead['lexeme'] == 'boolean':
-            self.last_type = 'boolean'
             self.match('boolean')
         elif self._lookahead['lexeme'] == 'real':
-            self.last_type = 'real'
             self.match('real')
         else:
             return False  # ERRO

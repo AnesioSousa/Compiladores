@@ -5,11 +5,11 @@ from app.parser import GoatParser
 def main():
     myLexer = LexicalAnalyser()
 
-    tokens = myLexer.scanner("./teste-gramatica.txt")
+    tokens = myLexer.scanner("./files/other_input.txt")
 
     myParser = GoatParser(input_tokens=tokens)
 
-    if myParser.run_program():
+    if myParser.declarations():
         print("SuCelso")
     else:
         print("Fail!")
