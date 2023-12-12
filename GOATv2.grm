@@ -21,7 +21,7 @@ NUM = ('0'|{Digit9}{Digit}*)('.'{Digit}+)?
 BOOL = 'true' | 'false'
 IDE    = {Letter}({Letter}|{Digit}|'_')*
 STR = '"' ( {String Chars} | '\' {Printable} )* '"'
-TYPE = ('int' | 'string' | 'boolean' | 'real') | ('int' | 'string' | 'boolean' | 'real') ('[' {Digit}+ ']')*
+TYPE = ('int' | 'string' | 'boolean' | 'real') 
 
 
      
@@ -76,12 +76,12 @@ TYPE = ('int' | 'string' | 'boolean' | 'real') | ('int' | 'string' | 'boolean' |
 <Variable-Block> ::= | 'variables' '{' <Variable> '}'
 <Variable> ::= | TYPE IDE <Optional-Value> <Variable-Same-Line> ';' <Variable> 
 <Variable-Same-Line> ::= | ',' IDE <Optional-Value> <Variable-Same-Line>
-                 
-<Constant> ::= TYPE <Constant-Alt>
+                      
+<Constant-Block> ::= 'const' '{' <Constant> '}'
+<Constant> ::= TYPE <Constant-Alt> |
 <Constant-Alt-Mtrz> ::= '[' NUM ']' |
 <Constant-Alt> ::= <Constant-Alt-Mtrz> IDE '=' <Assignment-Value>  <Constant-Same-Line> ';' <Constant> |
 <Constant-Same-Line> ::= ',' IDE '=' <Assignment-Value> <Constant-Same-Line> |
-
 
 
 
