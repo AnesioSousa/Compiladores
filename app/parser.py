@@ -23,9 +23,32 @@ class GoatParser:
 
     def run_program(self):
         ans = True
-        if self._lookahead['lexeme'] == 'const':
+        if self._lookahead['lexeme'] == 'variables':
+            self.match('variables')
+            ans = self.variables() and self.a()
+        elif self._lookahead['lexeme'] == 'const':
             self.match('const')
             ans = self.constant_block()  # and self.b()
+        return ans
+
+    def variables(self):
+        pass
+
+    def a(self):
+        ans = False
+        if self.lookahead['lexeme'] == 'algoritmo':
+            self.match('algoritmo')
+            ans = self.algoritmo()
+        elif self.lookahead['lexeme'] == 'funcao':
+            self.match('funcao')
+            if self.funcao():
+                ans = self.a()
+        elif self.lookahead['lexeme'] == 'constantes':
+            self.match('constantes')
+            ans = self.constantes() and self.c()
+        elif self.lookahead['lexeme'] == 'registro':
+            self.match('registro')
+            ans = self.registro() and self.a()
         return ans
 
     def match(self, symbol):
