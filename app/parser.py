@@ -26,6 +26,10 @@ class GoatParser:
         self._input_tokens = input_tokens
         self._lookahead = self._input_tokens[0]
         self._token_counter = 0
+        self.symbol_table = []
+        self.last_type = None
+    
+    def run_program(self):
 
     def declarations(self):
         ans = True
@@ -33,6 +37,17 @@ class GoatParser:
             self.match('variables')
             ans = self.variables()#and self.a()
         elif self._lookahead['lexeme'] == 'const':
+        if self._lookahead['lexeme'] == 'variables':
+            self.match('variables')
+            ans = self.variable_block() and self.a()
+        elif self._lookahead['lexeme'] == 'const':
+            self.match('const')
+            ans = self.constant_block() and self.b()
+        return ans
+
+    def a(self):
+        ans = False
+        if self._lookahead['lexeme'] == 'const':
             self.match('const')
             ans = self.constant_block()  # and self.b()
         return ans
@@ -73,13 +88,13 @@ class GoatParser:
 
     def match(self, symbol):
         if symbol == self._lookahead['lexeme']:
-            self._lookahead = self.le_token()
+            self._lookahead = self.next_token()
             return True
         else:
             # print(f"expected {symbol}, found {self.lookahead['lexeme']}\n")
             return False
 
-    def le_token(self):
+    def next_token(self):
         if (self._token_counter < len(self._input_tokens)-1):
             self._token_counter += 1
         return self._input_tokens[self._token_counter]
@@ -136,6 +151,9 @@ class GoatParser:
         # fazer CAC
         return False
 
+        #fazer CAC
+        return False
+    
     def constant_same_line(self):
         if self._lookahead['lexeme'] == ',':
             self.match(',')
@@ -191,6 +209,8 @@ class GoatParser:
     def value(self):
         if self._lookahead['token_type'] == 'NRO':
             return self.nro()
+        elif self._lookahead['token_type'] == 'CAC':
+            return self.match(self._lookahead['lexeme'])
         elif self._lookahead['token_type'] == 'CAC':
             return self.match(self._lookahead['lexeme'])
         return False
