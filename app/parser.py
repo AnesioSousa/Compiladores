@@ -16,7 +16,7 @@ class GoatParser:
         self._output_file = pathof_output_file
         self._lookahead = self._input_tokens[0]
         #print(self._lookahead)
-        self._char_counter = 0
+        self._token_counter = 0
         self.symbol_table = []
         self.last_type = None
     
@@ -36,9 +36,9 @@ class GoatParser:
             return False
 
     def le_token(self):
-        if (self._char_counter < len(self._input_tokens)-1):
-            self._char_counter += 1
-        return self._input_tokens[self._char_counter]
+        if (self._token_counter < len(self._input_tokens)-1):
+            self._token_counter += 1
+        return self._input_tokens[self._token_counter]
 
     def constant_block(self):
         if self._lookahead['lexeme'] == '{':
