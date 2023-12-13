@@ -28,70 +28,162 @@ class GoatParser:
         self._token_counter = 0
         self.symbol_table = []
         self.last_type = None
-    
-    def run_program(self):
-
+    # LEMBRAR DE INVERTER PARA FICAR NA FORMA COMBINADA EM SESSÃO: <Program> ::= <Constant-Block> <Variable-Block> <Class-Block> <Object-Block> <Main-Class>
     def declarations(self):
         ans = True
-        if self._lookahead['lexeme'] == 'variables':
-            self.match('variables')
-            ans = self.variables()#and self.a()
-        elif self._lookahead['lexeme'] == 'const':
-        if self._lookahead['lexeme'] == 'variables':
-            self.match('variables')
-            ans = self.variable_block() and self.a()
-        elif self._lookahead['lexeme'] == 'const':
-            self.match('const')
-            ans = self.constant_block() and self.b()
-        return ans
-
-    def a(self):
-        ans = False
         if self._lookahead['lexeme'] == 'const':
             self.match('const')
-            ans = self.constant_block()  # and self.b()
+            ans = self.constant_block() and self.a()
+        elif self._lookahead['lexeme'] == 'variables':
+            self.match('variables')
+            ans = self.variable_block() and self.b()
         return ans
-
-    def variables(self):
-        self.match('{')
-        self.variable_declaration()
-        while self._lookahead['lexeme'] == ',':
-            self.match(',')
-            self.variable_declaration()
-        self.match('}')
-        print("Variables parsed successfully.")
-        
-    def variable_declaration(self):
-        self.type()
-        self.match('ID')
-        if self._lookahead['lexeme'] == '=':
-            self.match('=')
-            #self.expression()
-        self.match(';')
 
     def a(self):
         ans = False
-        if self.lookahead['lexeme'] == 'algoritmo':
-            self.match('algoritmo')
-            ans = self.algoritmo()
-        elif self.lookahead['lexeme'] == 'funcao':
-            self.match('funcao')
-            if self.funcao():
-                ans = self.a()
-        elif self.lookahead['lexeme'] == 'constantes':
-            self.match('constantes')
-            ans = self.constantes() and self.c()
-        elif self.lookahead['lexeme'] == 'registro':
-            self.match('registro')
-            ans = self.registro() and self.a()
+        if self._lookahead['lexeme'] == 'variables':
+            self.match('variables')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                ans = self.variable_block() and self.c()
+            
         return ans
+    # pode haver código sem const-block!
+    def b(self):
+        ans = True
+        if self._lookahead['lexeme'] == 'const':
+            self.match('const')
+            ans = self.constant_block() and self.c()
+        
+        return ans
+        
+    def c(self):
+        ans = False
+        if self._lookahead['lexeme'] == 'objects':
+            self.match('objects')
+            ans = self.objects()
+        elif self._lookahead['lexeme'] == 'class':
+            self.match('class')
+            if self._lookahead['lexeme'] == 'main':
+                self.match('main')
+                ans = self.main()
+            elif self.class_block():
+                ans = self.c()
+        return ans
+    
+    
+    def variable_block(self):
+        ans=False
+        if self.type():
+            if self.ide():
+                ans = self.varcont()
+        return ans
+    
+    def varcont(self):
+        return self.varinit() and self.varfinal()
+    
+    def varinit(self):
+        if self._lookahead['lexeme'] in [',',';']:
+            return True
+        if self._lookahead['lexeme'] == '=':
+            self.match('=')
+            return self.value()
+        elif self._lookahead['lexeme'] == '[':
+            self.match('[')
+            ans = False
+            if self._lookahead['token_type'] == 'NRO':
+                ans = self.nro()
+            elif self._lookahead['token_type'] == 'IDE':
+                ans = self.ide()
+            if ans and self.match(']'):
+                return self.varinitcont()
+        return False
+    
+    def varinitcont(self): 
+        if self._lookahead['lexeme'] in [';',',']:
+            return True 
+        if self._lookahead['lexeme'] == '=':
+            self.match('=')
+            if self.match('{'):
+                return self.vetor()
+        elif self._lookahead['lexeme'] == '[':
+            self.match('[')
+            ans = False
+            if self._lookahead['token_type'] == 'NRO':
+                ans = self.nro()
+            elif self._lookahead['token_type'] == 'IDE':
+                ans = self.ide()
+            if ans and self.match(']'):
+                return self.varinitcontmatr()
+        return False
+    
+    def varinitcontmatr(self):
+        if self._lookahead['lexeme'] == ';':
+            return True  
+        elif self._lookahead['lexeme'] == '{':
+            self.match('{')
+            if self.vetor():
+                if self.match(',') and self.match('{'):
+                    return self.vetor()
+        elif self._lookahead['lexeme'] == '[':
+            self.match('[')
+            ans = False
+            if self._lookahead['token_type'] == 'NRO':
+                ans = self.nro()
+            elif self._lookahead['token_type'] == 'IDE':
+                ans = self.ide()
+            if ans and self.match(']'):
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    ans = self.match('{')
+                    if ans and self.vetor():
+                        if self.match(',') and self.match('{'):
+                            if self.vetor():
+                                if self.match(',') and self.match('{'):
+                                    return self.vetor()
+                elif self._lookahead['lexeme'] == ';':
+                    return True
+        return False
+    
+    def vetor(self):
+        if self.value():
+            return self.vetorcont()
+        return False
+
+    def vetorcont(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            return self.vetor()
+        elif self._lookahead['lexeme'] == '}':
+            self.match('}')
+            return True
+        return False
+    
+    def varfinal(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            return self.varalt()
+        elif self._lookahead['lexeme'] == ';':
+            self.match(';')
+            return self.varfim()
+        return False
+    
+    def varalt(self):
+        if self.ide():
+            return self.varcont()        
+        return False
+    
+    def varfim(self):
+        if self._lookahead['lexeme'] == '}':
+            return self.match('}')
+        return self.variable_block()
 
     def match(self, symbol):
         if symbol == self._lookahead['lexeme']:
             self._lookahead = self.next_token()
             return True
         else:
-            # print(f"expected {symbol}, found {self.lookahead['lexeme']}\n")
+            # print(f"expected {symbol}, found {self._lookahead['lexeme']}\n")
             return False
 
     def next_token(self):
