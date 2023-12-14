@@ -9,7 +9,7 @@ const {
     int MAX = 10, MIN = 0;
     real soma = 33.85;
     string[50] msg = "TESTE", msg2 = "oi";
-    int nro = objeto.idade;
+    int number = objeto.idade;
     real[50] valor = objeto.valor, juros = 27.5;
 }
 
@@ -28,7 +28,7 @@ class GoatParser:
         self._token_counter = 0
         self.symbol_table = []
         self.last_type = None
-    # LEMBRAR DE INVERTER PARA FICAR NA FORMA COMBINADA EM SESSÃO: <Program> ::= <Constant-Block> <Variable-Block> <Class-Block> <Object-Block> <Main-Class>
+        
     def declarations(self):
         ans = True
         if self._lookahead['lexeme'] == 'const':
@@ -36,7 +36,7 @@ class GoatParser:
             ans = self.constant_block() and self.a()
         elif self._lookahead['lexeme'] == 'variables':
             self.match('variables')
-            ans = self.variable_block() and self.b()
+            ans = self.variable() and self.b()
         return ans
 
     def a(self):
@@ -45,7 +45,7 @@ class GoatParser:
             self.match('variables')
             if self._lookahead['lexeme'] == '{':
                 self.match('{')
-                ans = self.variable_block() and self.c()
+                ans = self.variable() and self.c()
             
         return ans
     # pode haver código sem const-block!
@@ -72,9 +72,10 @@ class GoatParser:
         return ans
     
     
-    def variable_block(self):
+    def variable(self):
         ans=False
         if self.type():
+            self.varinitcontmatr()
             if self.ide():
                 ans = self.varcont()
         return ans
@@ -88,11 +89,18 @@ class GoatParser:
         if self._lookahead['lexeme'] == '=':
             self.match('=')
             return self.value()
+        if self._lookahead['lexeme'] == '.':
+            self.match('.')
+            return self.varinit()
+        elif self._lookahead['token_type'] == 'IDE':
+                if self.ide():
+                    return self.varfinal()
+        #vetores
         elif self._lookahead['lexeme'] == '[':
             self.match('[')
             ans = False
             if self._lookahead['token_type'] == 'NRO':
-                ans = self.nro()
+                ans = self.number()
             elif self._lookahead['token_type'] == 'IDE':
                 ans = self.ide()
             if ans and self.match(']'):
@@ -110,7 +118,7 @@ class GoatParser:
             self.match('[')
             ans = False
             if self._lookahead['token_type'] == 'NRO':
-                ans = self.nro()
+                ans = self.number()
             elif self._lookahead['token_type'] == 'IDE':
                 ans = self.ide()
             if ans and self.match(']'):
@@ -129,7 +137,7 @@ class GoatParser:
             self.match('[')
             ans = False
             if self._lookahead['token_type'] == 'NRO':
-                ans = self.nro()
+                ans = self.number()
             elif self._lookahead['token_type'] == 'IDE':
                 ans = self.ide()
             if ans and self.match(']'):
@@ -166,6 +174,9 @@ class GoatParser:
         elif self._lookahead['lexeme'] == ';':
             self.match(';')
             return self.varfim()
+        elif self._lookahead['lexeme'] == '.':
+            self.match('.')
+            return self.varinit()
         return False
     
     def varalt(self):
@@ -176,7 +187,7 @@ class GoatParser:
     def varfim(self):
         if self._lookahead['lexeme'] == '}':
             return self.match('}')
-        return self.variable_block()
+        return self.variable()
 
     def match(self, symbol):
         if symbol == self._lookahead['lexeme']:
@@ -223,7 +234,7 @@ class GoatParser:
     def constant_alt_mtrz(self):
         if self._lookahead['lexeme'] == '[':
             self.match('[')
-            if self.nro():
+            if self.number():
                 if self._lookahead['lexeme'] == ']':
                     self.match(']')
                     return True
@@ -300,17 +311,19 @@ class GoatParser:
 
     def value(self):
         if self._lookahead['token_type'] == 'NRO':
-            return self.nro()
+            return self.number()
         elif self._lookahead['token_type'] == 'CAC':
             return self.match(self._lookahead['lexeme'])
         elif self._lookahead['token_type'] == 'CAC':
             return self.match(self._lookahead['lexeme'])
+        elif self._lookahead['token_type'] == 'IDE':
+            return self.ide()
         return False
 
     def follow(self, k=1):
         return self._input_tokens[self.i+k]
 
-    def nro(self):
+    def number(self):
         if self._lookahead['token_type'] == 'NRO':
             self.match(self._lookahead['lexeme'])
             return True
