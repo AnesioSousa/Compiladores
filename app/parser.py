@@ -685,3 +685,59 @@ class GoatParser:
             return True
         
         return False
+    
+    def expression_sequence(self):
+        if self.expression():
+            if self._lookahead['lexeme'] == ';':
+                self.match(';')
+                self.expression_sequence_list()
+                return True
+
+    # Rever esse método. Uma parte está só comentada na gramática
+    def expression_sequence_list(self):
+        if self.expression_sequence():
+            return True
+
+        return True            
+
+    def assignment_expression(self):
+        if self.type():
+            if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    return self.logical_and_expression()
+        elif self.ide():
+            if self._lookahead['lexeme'] == '=':
+                self.match('=')
+                return self.logical_and_expression()
+            
+        return False
+    
+    def print_command(self):
+        if self._lookahead['lexeme'] == 'print':
+            self.match('print')
+            if self._lookahead['lexeme'] == '(':
+                self.match('(')
+                if self.possible_value():
+                    if self._lookahead['lexeme'] == ')':
+                        self.match(')')
+                        if self._lookahead['lexeme'] == ';':
+                            self.match(';')
+                            return True
+                        
+        return False
+    
+    def read_command(self):
+        if self._lookahead['lexeme'] == 'read':
+            self.match('read')
+            if self._lookahead['lexeme'] == '(':
+                self.match('(')
+                if self.ide():
+                    if self.object_value():
+                        if self._lookahead['lexeme'] == ')':
+                            self.match(')')
+                            if self._lookahead['lexeme'] == ';':
+                                self.match(';')
+                                return True
+                            
+        return False
