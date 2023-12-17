@@ -436,7 +436,7 @@ class GoatParser:
         if self.primary_expression():
             pass
         elif self.access_expression_list():
-            pass
+            return True
         
         return False
     
@@ -450,7 +450,7 @@ class GoatParser:
         elif self.str():
             return True
         elif self.method_call():
-            pass
+            return True
         
         return False
         
@@ -497,8 +497,9 @@ class GoatParser:
                     self.match(']')
                     return True
             
-
-    
     def unary_expression_list(self):
-        pass
+        if self._lookahead['lexeme'] == '++':
+            self.match('++')
+        if self._lookahead['lexeme'] == '--':
+            self.match('--')
     
