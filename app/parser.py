@@ -18,8 +18,12 @@ class GoatParser:
         self._token_counter = 0
         self.symbol_table = []
         self.last_type = None
-        
-    def declarations(self):
+    
+    def program(self):
+        return self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
+    
+    """
+     def program(self):
         ans = True
         if self._lookahead['lexeme'] == 'const':
             self.match('const')
@@ -28,6 +32,9 @@ class GoatParser:
             self.match('variables')
             ans = self.variable() and self.b()
         return ans
+    
+    """
+   
 
     def a(self):
         ans = False
@@ -143,11 +150,9 @@ class GoatParser:
             return self.object_value()
         elif self.value():
             return True
-        
-        #Não tá entrando aqui quando tem um "vetor" na atribuição 
         elif self.array():
             return True
-        # fazer CAC
+
         return False
     
     def constant_same_line(self):

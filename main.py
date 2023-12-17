@@ -9,7 +9,7 @@ def main():
 
     myParser = GoatParser(input_tokens=tokens)
 
-    if myParser.declarations():
+    if myParser.program():
         print("SuCelso")
     else:
         print("Fail!")
