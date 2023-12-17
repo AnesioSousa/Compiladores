@@ -573,8 +573,10 @@ class GoatParser:
         
         return True
     def parameter(self):
-        if self.ide():
-            self.parameter_value_list()
+        if self.type():
+            if self.ide():
+                self.parameter_value_list()
+        
             
     def parameter_value_list(self):
         if self._lookahead['lexeme'] == ',':
