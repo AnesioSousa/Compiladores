@@ -65,8 +65,7 @@ class GoatParser:
             self.variable()
             if self._lookahead['lexeme'] == '}':
                 self.match('}')
-    
-    
+
     def variable(self):
         ans=False
         if self.type():
@@ -429,6 +428,16 @@ class GoatParser:
     def equality_expression(self):
         return self.relational_expression() and self.equality_expression_list()
     
+    def equality_expression_list(self):
+        if self._lookahead['lexeme'] == '!=':
+            self.match('!=')
+            return self.relational_expression()
+        elif self._lookahead['lexeme'] == '==':
+            self.match('==')
+            return self.relational_expression()
+        
+        return True
+    
     def relational_expression(self):
         return self.additive_expression() and self.relational_expression_list()
     
@@ -540,7 +549,19 @@ class GoatParser:
             self.match('++')
         if self._lookahead['lexeme'] == '--':
             self.match('--')
+            
+    def multiplicative_expression(self):
+        return self.unary_expression() and self.multiplicative_expression_list()
     
+    def multiplicative_expression_list(self):
+        if self._lookahead['lexeme'] == '*':
+            self.match('*')
+            return self.unary_expression()
+        elif self._lookahead['lexeme'] == '/':
+            self.match('/')
+            return self.unary_expression()
+        
+        return True
     def parameter(self):
         if self.ide():
             self.parameter_value_list()
@@ -608,3 +629,22 @@ class GoatParser:
                     if self._lookahead['lexeme'] == ';':
                         self.match(';')
                         self.assignment_method()
+                        
+                        
+    def additive_expression(self):
+        if self.multiplicative_expression():
+            return True
+        elif self.additive_expression_list():
+            return True
+        
+        return False
+    
+    def additive_expression_list(self):
+        if self._lookahead['lexeme'] == '+':
+            self.match('+')
+            return self.multiplicative_expression()
+        elif self._lookahead['lexeme'] == '-':
+            self.match('-')
+            return self.multiplicative_expression()
+        
+        return False
