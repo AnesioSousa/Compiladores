@@ -484,7 +484,20 @@ class GoatParser:
             
     
     def access_expression_list(self):
-        pass
+        if self._lookahead['lexeme'] == '->':
+            self.match('->')
+            return self.primary_expression()
+        elif self._lookahead['lexeme'] == '.':
+            self.match('.')
+            return self.primary_expression()
+        elif self._lookahead['lexeme'] == '[':
+            self.match('[')
+            if self.primary_expression():
+                if self._lookahead['lexeme'] == ']':
+                    self.match(']')
+                    return True
+            
+
     
     def unary_expression_list(self):
         pass
