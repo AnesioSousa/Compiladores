@@ -305,7 +305,7 @@ class GoatParser:
         if self.if_statement():
             return True
         elif self.for_statement():
-            pass
+            return True
         elif self._lookahead['lexeme'] == 'pass':
             return True
         
@@ -425,17 +425,67 @@ class GoatParser:
                                     self.statement_sequence()
                                     if self._lookahead['lexeme'] == '}':
                                         self.match('}')
-                                        
                                         return True
-                                    
         return False
     
     
     def unary_expression(self):
-        return self.acess_expression() and self.unary_expression_list()
+        return self.access_expression() and self.unary_expression_list()
     
-    def acess_expression(self):
+    def access_expression(self):
+        if self.primary_expression():
+            pass
+        elif self.access_expression_list():
+            pass
+        
+        return False
+    
+    def primary_expression(self):
+        if self.ide():
+            return True
+        elif self.number():
+            return True
+        elif self.bool():
+            return True
+        elif self.str():
+            return True
+        elif self.method_call():
+            pass
+        
+        return False
+        
+    def method_call(self):
+        if self.ide():
+            if self._lookahead['lexeme'] == '(':
+                self.match('(')
+                self.args_list()
+                if self._lookahead['lexeme'] == ')':
+                    self.match(')')
+                    return True
+                
+        return False
+    
+    def args_list(self):
+        if self.assignment_value() and self.assignment_value_list():
+            return True
+    
+    def assignment_value_list(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            self.args_list()
+    
+    #Rever isso: Const analisa strings sem precisar disso!
+    def str(self):
+        return True if self._lookahead['token_type'] == 'CAC' else False
+            
+    
+    def bool(self):
+        return True if self._lookahead['lexeme'] == 'true' or self._lookahead['lexeme'] == 'false' else False
+            
+    
+    def access_expression_list(self):
         pass
+    
     def unary_expression_list(self):
         pass
     
