@@ -200,16 +200,17 @@ class GoatParser:
     def array(self):
         if self._lookahead['lexeme'] == '[':
             self.match('[')
-            return self.array_value() and self.more_array_value()
+            if self.array_value() and self.more_array_value():
+                if self._lookahead['lexeme'] == ']':
+                    self.match(']')
+                    return True
+        return False
    
     def more_array_value(self):
         if self._lookahead['lexeme'] == ',':
             self.match(',')
             if self.array_value() and self.more_array_value():
-                if self._lookahead['lexeme'] == ']':
-                    self.match(']')
                     return True
-        return True
     
     def array_value(self):
         if self.possible_value():
@@ -217,7 +218,7 @@ class GoatParser:
                 self.match(']')
                 return True
         elif self.array():
-            pass
+            return True
 
         return False
 
@@ -252,8 +253,7 @@ class GoatParser:
         return False
 
     def possible_value(self):
-        if self._lookahead['token_type'] == 'IDE':
-            self.match(self.lookahead['lexeme'])
+        if self.ide():
             return self.object_value()
         elif self.value():
             return True
@@ -434,7 +434,7 @@ class GoatParser:
     
     def access_expression(self):
         if self.primary_expression():
-            pass
+            return True
         elif self.access_expression_list():
             return True
         
