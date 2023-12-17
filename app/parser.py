@@ -302,15 +302,41 @@ class GoatParser:
             pass
         
     def statement(self):
-        if self.if_command():
+        if self.if_statement():
             pass
-        elif self.for_command():
+        elif self.for_statement():
             pass
         elif self._lookahead['lexeme'] == 'pass':
             return True
         
         return False
-            
+    
+    def if_statement(self):
+        if self._lookahead['lexeme'] == 'if':
+            self.match('if')
+            if self.condition():
+                if self._lookahead['lexeme'] == 'then':
+                    self.match('then')
+                    if self._lookahead['lexeme'] == '{':
+                        self.statement_sequence()
+                        if self._lookahead['lexeme'] == '}':
+                            self.match('}')
+                            self.else_statement()
+                        else:
+                            return False
+
+        return False
+    
+    def else_statement(self):
+        if self._lookahead['lexeme'] == 'else':
+            self.match('else')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                self.statement_sequence()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
+                    
+                
     
         """
                 if self._lookahead['lexeme'] == 'variables':
