@@ -741,3 +741,11 @@ class GoatParser:
                                 return True
                             
         return False
+    
+    def command(self):
+        if self.print_command():
+            return True
+        elif self.read_command():
+            return True
+        
+        return False
