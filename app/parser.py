@@ -648,3 +648,40 @@ class GoatParser:
             return self.multiplicative_expression()
         
         return False
+    
+    def ide_list(self):
+        if self.ide():
+            return self.ide_lis_list()
+        
+    def ide_lis_list(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            return self.ide_list()
+        
+        return True
+    
+    def declaration_expression(self):
+        if self.ide():
+            return self.ide_list()
+        
+        
+    def assignment_expression(self):
+        if self.type():
+            if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    return self.logical_and_expression()
+        elif self.ide():
+            if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    return self.logical_and_expression()
+                
+        return False
+    
+    def expression(self):
+        if self.declaration_expression():
+            return True
+        elif self.assignment_expression():
+            return True
+        
+        return False
