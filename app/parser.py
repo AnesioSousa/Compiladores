@@ -241,9 +241,6 @@ class GoatParser:
             return self.bool()
         return False
 
-    def follow(self, k=1):
-        return self._input_tokens[self.i+k]
-
     def number(self):
         if self._lookahead['token_type'] == 'NRO':
             self.match(self._lookahead['lexeme'])
@@ -290,7 +287,49 @@ class GoatParser:
                     return False
             else:
                 return False
-                
+    
+    def object(self):
+        if self.ide():
+            if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    if self.ide():
+                        if self._lookahead['lexeme'] == '->':
+                            self.match('->')
+                            if self._lookahead['lexeme'] == 'constructor':
+                                self.match('constructor')
+                                if self._lookahead['lexeme'] == '(':
+                                    self.match('(')
+                                    self.args_list()
+                                    if self._lookahead['lexeme'] == ')':
+                                        self.match(')')
+                                        self.object_same_line()
+                                        if self._lookahead['lexeme'] == ';':
+                                            self.match(';')
+                                            self.object()
+                                        else:
+                                            return False
+                                    else:
+                                        return False
+                                    
+        return True
+                        
+    def object_same_line(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    if self.ide():
+                        if self._lookahead['lexeme'] == '->':
+                            self.match('->')
+                            if self._lookahead['lexeme'] == 'constructor':
+                                self.match('constructor')
+                                if self._lookahead['lexeme'] == '(':
+                                    self.match('(')
+                                    self.args_list()
+                                    if self._lookahead['lexeme'] == ')':
+                                        self.match(')')
     
     def statement_sequence(self):
         if self.statement() and self.statement_sequence():
@@ -502,3 +541,70 @@ class GoatParser:
         if self._lookahead['lexeme'] == '--':
             self.match('--')
     
+    def parameter(self):
+        if self.ide():
+            self.parameter_value_list()
+            
+    def parameter_value_list(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            self.parameter()
+            
+    def class_block(self):
+        if self._lookahead['lexeme'] == 'class':
+            self.match('class')
+            if self.ide():
+                self.class_extends()
+                if self._lookahead['lexeme'] == '{':
+                    self.match('{')
+                    if self.class_content():
+                        if self._lookahead['lexeme'] == '}':
+                            self.match('}')
+                            self.class_block()
+            else:
+                return False
+                        
+    def class_extends(self):
+        if self._lookahead['lexeme'] == 'extends':
+            self.match('extends')
+            if not self.ide():
+                return False
+            
+        return True
+    
+    def class_content(self):
+        return self.variable_block() and self.constructor() and self.methods()
+        
+        
+    def constructor(self):
+        if self._lookahead['lexeme'] == 'constructor':
+            self.match('constructor')
+            if self._lookahead['lexeme'] == '(':
+                self.match('(')
+                self.parameter()
+                if self._lookahead['lexeme'] == ')':
+                    self.match(')')
+                    if self._lookahead['lexeme'] == '{':
+                        self.match('{')
+                        self.assignment_method()
+                        if self._lookahead['lexeme'] == '}':
+                            self.match('}')
+                            return True
+                    else:
+                        return False 
+                else:
+                        return False 
+            else:
+                return False   
+        return True
+        
+    def assignment_method(self):
+        if self._lookahead['lexeme'] == 'this':
+            self.match('this')
+            if self._lookahead['lexeme'] == '.':
+                self.match('.')
+                if self.ide():
+                    self.optional_value()
+                    if self._lookahead['lexeme'] == ';':
+                        self.match(';')
+                        self.assignment_method()
