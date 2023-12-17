@@ -73,8 +73,8 @@ TYPE = ('int' | 'string' | 'boolean' | 'real')
 
 
 ! --------------------- Definições de Variáveis e Constantes ---------------------
-<Variable-Block> ::= | 'variables' '{' <Variable> '}'
-<Variable> ::= | TYPE IDE <Optional-Value> <Variable-Same-Line> ';' <Variable> 
+<Variable-Block> ::= 'variables' '{' <Variable> '}' | 
+<Variable> ::= TYPE IDE <Optional-Value> <Variable-Same-Line> ';' <Variable> | 
 <Variable-Same-Line> ::= | ',' IDE <Optional-Value> <Variable-Same-Line>
                       
 <Constant-Block> ::= 'const' '{' <Constant> '}'
