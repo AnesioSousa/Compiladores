@@ -303,7 +303,7 @@ class GoatParser:
         
     def statement(self):
         if self.if_statement():
-            pass
+            return True
         elif self.for_statement():
             pass
         elif self._lookahead['lexeme'] == 'pass':
@@ -348,9 +348,9 @@ class GoatParser:
             
     def logical_and_expression(self):
         if self.logical_and_expression():
-            pass
+            return True
         elif self.logical_or_expression():
-            pass
+            return True
         elif self._lookahead['lexeme'] == '(':
             self.match('(')
             if self.logical_and_expression():
@@ -409,92 +409,33 @@ class GoatParser:
             return self.additive_expression()
     
     
-        """
-                if self._lookahead['lexeme'] == 'variables':
-            self.match('variable')
-            return self.variable_block()
-        elif self._lookahead['lexeme'] == 'objects':
-            self.match('object')
-            return self.object_block()
-        elif self._lookahead['lexeme'] == 'if':
-            self.match('if')
-            return self.statement()
-        """
-
-            
-        
-"""
-    
-    def varcont(self):
-        return self.varinit() and self.varfinal()
-    
-    def varinit(self):
-        if self._lookahead['lexeme'] in [',',';']:
-            return True
-        if self._lookahead['lexeme'] == '=':
-            self.match('=')
-            return self.value()
-        if self._lookahead['lexeme'] == '.':
-            self.match('.')
-            return self.varinit()
-        elif self._lookahead['token_type'] == 'IDE':
-                if self.ide():
-                    return self.varfinal()
-        #vetores
-        elif self._lookahead['lexeme'] == '[':
-            self.match('[')
-            ans = False
-            if self._lookahead['token_type'] == 'NRO':
-                ans = self.number()
-            elif self._lookahead['token_type'] == 'IDE':
-                ans = self.ide()
-            if ans and self.match(']'):
-                return self.varinitcont()
+    def for_statement(self):
+        if self._lookahead['lexeme'] == 'for':
+            self.match('for')
+            if self._lookahead['lexeme'] == '(':
+                self.match('(')
+                if self.variable() and self.logical_and_expression():
+                    if self._lookahead['lexeme'] == ';':
+                        self.match(';')
+                        if self.unary_expression():
+                            if self._lookahead['lexeme'] == ')':
+                                self.match(')')
+                                if self._lookahead['lexeme'] == '{':
+                                    self.match('{')
+                                    self.statement_sequence()
+                                    if self._lookahead['lexeme'] == '}':
+                                        self.match('}')
+                                        
+                                        return True
+                                    
         return False
     
-    def varinitcont(self): 
-        if self._lookahead['lexeme'] in [';',',']:
-            return True 
-        if self._lookahead['lexeme'] == '=':
-            self.match('=')
-            if self.match('{'):
-                return self.vetor()
-        elif self._lookahead['lexeme'] == '[':
-            self.match('[')
-            ans = False
-            if self._lookahead['token_type'] == 'NRO':
-                ans = self.number()
-            elif self._lookahead['token_type'] == 'IDE':
-                ans = self.ide()
-            if ans and self.match(']'):
-                return self.varinitcontmatr()
-        return False
     
-    def varinitcontmatr(self):
-        if self._lookahead['lexeme'] == ';':
-            return True  
-        elif self._lookahead['lexeme'] == '{':
-            self.match('{')
-            if self.vetor():
-                if self.match(',') and self.match('{'):
-                    return self.vetor()
-        elif self._lookahead['lexeme'] == '[':
-            self.match('[')
-            ans = False
-            if self._lookahead['token_type'] == 'NRO':
-                ans = self.number()
-            elif self._lookahead['token_type'] == 'IDE':
-                ans = self.ide()
-            if ans and self.match(']'):
-                if self._lookahead['lexeme'] == '=':
-                    self.match('=')
-                    ans = self.match('{')
-                    if ans and self.vetor():
-                        if self.match(',') and self.match('{'):
-                            if self.vetor():
-                                if self.match(',') and self.match('{'):
-                                    return self.vetor()
-                elif self._lookahead['lexeme'] == ';':
-                    return True
-        return False
-"""
+    def unary_expression(self):
+        return self.acess_expression() and self.unary_expression_list()
+    
+    def acess_expression(self):
+        pass
+    def unary_expression_list(self):
+        pass
+    
