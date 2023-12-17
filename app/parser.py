@@ -324,7 +324,16 @@ class GoatParser:
                             self.else_statement()
                         else:
                             return False
-
+                        
+    def else_statement(self):
+        if self._lookahead['lexeme'] == 'else':
+            self.match('else')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                self.statement_sequence()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
+                    
         return False
     
     def condition(self):
@@ -368,16 +377,18 @@ class GoatParser:
                     return True
                 
         return False
-                    
-    def else_statement(self):
-        if self._lookahead['lexeme'] == 'else':
-            self.match('else')
-            if self._lookahead['lexeme'] == '{':
-                self.match('{')
-                self.statement_sequence()
-                if self._lookahead['lexeme'] == '}':
-                    self.match('}')
-                    
+        
+        
+    def logical_not_expression(self):
+        if self.equality_expression():
+            pass
+        elif self._lookahead['lexeme'] == '!':
+            self.match('!')
+            return self.logical_not_expression()
+        
+        return False
+        
+
                 
     
         """
