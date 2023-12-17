@@ -337,7 +337,38 @@ class GoatParser:
         
         return False
             
+    def logical_and_expression(self):
+        if self.logical_and_expression():
+            pass
+        elif self.logical_or_expression():
+            pass
+        elif self._lookahead['lexeme'] == '(':
+            self.match('(')
+            if self.logical_and_expression():
+                if self._lookahead['lexeme'] == ')':
+                    self.match(')')
+                    return True
+                
+        return False
     
+    def logical_or_expression(self):
+        if self.logical_not_expression():
+            pass
+        elif self.logical_or_expression():
+            if self._lookahead['lexeme'] == '||':
+                self.match('||')
+                return self.logical_not_expression()
+            else:
+                return False
+        elif self._lookahead['lexeme'] == '(':
+            self.match('(')
+            if self.logical_or_expression():
+                if self._lookahead['lexeme'] == ')':
+                    self.match(')')
+                    return True
+                
+        return False
+                    
     def else_statement(self):
         if self._lookahead['lexeme'] == 'else':
             self.match('else')
