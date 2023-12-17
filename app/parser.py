@@ -119,13 +119,15 @@ class GoatParser:
         return self._input_tokens[self._token_counter]
 
     def constant_block(self):
-        if self._lookahead['lexeme'] == '{':
-            self.match('{')
-            if self.constant():
-                if self._lookahead['lexeme'] == '}':
-                    self.match('}')
-            else:
-                return False
+        if self._lookahead['lexeme'] == 'const':
+            self.match('const')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                if self.constant():
+                    if self._lookahead['lexeme'] == '}':
+                        self.match('}')
+                else:
+                    return False
         print('Const read sucessfully')
         return True
 
@@ -208,6 +210,8 @@ class GoatParser:
                 if self._lookahead['lexeme'] == ']':
                     self.match(']')
                     return True
+            return True
+            
         return False
    
     def more_array_value(self):
@@ -215,6 +219,7 @@ class GoatParser:
             self.match(',')
             if self.array_value() and self.more_array_value():
                     return True
+        return True
     
     def array_value(self):
         if self.possible_value():
