@@ -387,9 +387,27 @@ class GoatParser:
             return self.logical_not_expression()
         
         return False
-        
-
-                
+    
+    def equality_expression(self):
+        return self.relational_expression() and self.equality_expression_list()
+    
+    def relational_expression(self):
+        return self.additive_expression() and self.relational_expression_list()
+    
+    def relational_expression_list(self):
+        if self._lookahead['lexeme'] == '<':
+            self.match('<')
+            return self.additive_expression()
+        elif self._lookahead['lexeme'] == '>':
+            self.match('>')
+            return self.additive_expression()
+        elif self._lookahead['lexeme'] == '<=':
+            self.match('<=')
+            return self.additive_expression()
+        elif self._lookahead['lexeme'] == '>=':
+            self.match('>=')
+            return self.additive_expression()
+    
     
         """
                 if self._lookahead['lexeme'] == 'variables':
