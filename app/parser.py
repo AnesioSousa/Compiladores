@@ -234,12 +234,11 @@ class GoatParser:
             return self.number()
         elif self._lookahead['token_type'] == 'CAC':
             return self.match(self._lookahead['lexeme'])
-        elif self._lookahead['token_type'] == 'CAC':
-            return self.match(self._lookahead['lexeme'])
         elif self._lookahead['token_type'] == 'IDE':
             return self.ide()
-        elif self._lookahead['lexeme'] == '[':
-            return self.array()
+        #Rever isso!
+        elif self._lookahead['token_type'] == 'LOG':
+            return self.bool()
         return False
 
     def follow(self, k=1):
