@@ -3,16 +3,6 @@ Universidade Estadual de Feira de Santana
 EXA869 - MI - PROCESSADORES DE LINGUAGEM DE PROGRAMAÇÃO - TP02 - 2023.2
 Autor: Anésio Neto 
 Docente: Matheus Pires
-
-
-const { 
-    int MAX = 10, MIN = 0;
-    real soma = 33.85;
-    string[50] msg = "TESTE", msg2 = "oi";
-    int number = objeto.idade;
-    real[50] valor = objeto.valor, juros = 27.5;
-}
-
 """
 
 
@@ -43,12 +33,10 @@ class GoatParser:
         ans = False
         if self._lookahead['lexeme'] == 'variables':
             self.match('variables')
-            if self._lookahead['lexeme'] == '{':
-                self.match('{')
-                ans = self.variable() and self.c()
+            ans = self.variable_block() and self.c()
             
         return ans
-    # pode haver código sem const-block!
+    
     def b(self):
         ans = True
         if self._lookahead['lexeme'] == 'const':
@@ -71,14 +59,274 @@ class GoatParser:
                 ans = self.c()
         return ans
     
+    def variable_block(self):
+         if self._lookahead['lexeme'] == '{':
+            self.match('{')
+            self.variable()
+            if self._lookahead['lexeme'] == '}':
+                self.match('}')
+    
     
     def variable(self):
         ans=False
         if self.type():
-            self.varinitcontmatr()
             if self.ide():
-                ans = self.varcont()
+                if self.optional_value() and self.variable_same_line():
+                    if self._lookahead['lexeme'] == ';':
+                        return self.variable()
+        if ans:
+            print("Variable read successfully")
         return ans
+    
+    def variable_same_line(self):
+        if self._lookahead['lexeme'] == ',':
+            if self.ide():
+                return self.optional_value() and self.variable_same_line()
+
+    def optional_value(self):
+        if self._lookahead['lexeme'] == '=':
+            self.match('=')
+            self.assignment_value()
+
+    def assignment_value(self):
+        if self.ide():
+            self.object_value()
+        elif self.value():
+            return True
+        elif self.array():
+            return True
+        
+        return False
+
+    
+    def match(self, symbol):
+        if symbol == self._lookahead['lexeme']:
+            self._lookahead = self.next_token()
+            return True
+        else:
+            # print(f"expected {symbol}, found {self._lookahead['lexeme']}\n")
+            return False
+
+    def next_token(self):
+        if (self._token_counter < len(self._input_tokens)-1):
+            self._token_counter += 1
+        return self._input_tokens[self._token_counter]
+
+    def constant_block(self):
+        if self._lookahead['lexeme'] == '{':
+            self.match('{')
+            if self.constant():
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
+            else:
+                return False
+        print('Const read sucessfully')
+        return True
+
+    def constant(self):
+        if self.type():
+            if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    if self.assignment_value() and self.constant_same_line():
+                        if self._lookahead['lexeme'] == ';':
+                            self.match(';')
+                            return self.constant()
+        elif self._lookahead['lexeme'] == '}':
+            return True
+                        
+        return False
+
+
+
+    def assignment_value(self):
+        if self.ide():
+            return self.object_value()
+        elif self.value():
+            return True
+        
+        #Não tá entrando aqui quando tem um "vetor" na atribuição 
+        elif self.array():
+            return True
+        # fazer CAC
+        return False
+    
+    def constant_same_line(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    return self.assignment_value() and self.constant_same_line()
+        else:
+            return True
+        # Rever isso aqui!
+        return False
+
+    def ide(self):
+        if self._lookahead['token_type'] == 'IDE':
+            self.match(self._lookahead['lexeme'])
+            return True
+        return False
+
+    def type(self):
+        if self._lookahead['lexeme'] in ['int','string', 'boolean', 'real']:
+            self.A()
+            if self._lookahead['lexeme'] in ['[']:
+                return self.B()
+            
+            return True
+            
+        return False 
+
+    def A(self):
+        if self._lookahead['lexeme'] == 'int':
+            self.match('int')
+        elif self._lookahead['lexeme'] == 'string':
+            self.match('string')
+        elif self._lookahead['lexeme'] == 'boolean':
+            self.match('boolean')
+        elif self._lookahead['lexeme'] == 'real':
+            self.match('real')
+        else:
+            return False  # ERRO
+        
+    def B(self):
+        if self._lookahead['lexeme'] in ['[']:
+            return self.array()
+                
+        return False  # ERRO
+
+    def array(self):
+        if self._lookahead['lexeme'] == '[':
+            self.match('[')
+            return self.array_value() and self.more_array_value()
+   
+    def more_array_value(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            if self.array_value() and self.more_array_value():
+                if self._lookahead['lexeme'] == ']':
+                    self.match(']')
+                    return True
+        return True
+    
+    def array_value(self):
+        if self.possible_value():
+            if self._lookahead['lexeme'] == ']':
+                self.match(']')
+                return True
+        elif self.array():
+            pass
+
+        return False
+
+    def object_value(self):
+        if self._lookahead['lexeme'] == '.':
+            self.match('.')
+            return self.ide()
+
+        return True
+
+    def value(self):
+        if self._lookahead['token_type'] == 'NRO':
+            return self.number()
+        elif self._lookahead['token_type'] == 'CAC':
+            return self.match(self._lookahead['lexeme'])
+        elif self._lookahead['token_type'] == 'CAC':
+            return self.match(self._lookahead['lexeme'])
+        elif self._lookahead['token_type'] == 'IDE':
+            return self.ide()
+        elif self._lookahead['lexeme'] == '[':
+            return self.array()
+        return False
+
+    def follow(self, k=1):
+        return self._input_tokens[self.i+k]
+
+    def number(self):
+        if self._lookahead['token_type'] == 'NRO':
+            self.match(self._lookahead['lexeme'])
+            return True
+
+        return False
+
+    def possible_value(self):
+        if self._lookahead['token_type'] == 'IDE':
+            self.match(self.lookahead['lexeme'])
+            return self.object_value()
+        elif self.value():
+            return True
+
+        return True
+    
+    def main_class(self):
+        if self._lookahead['lexeme'] == 'class':
+            self.match('class')
+            if self._lookahead['lexeme'] == 'main':
+                self.match('main')
+                if self._lookahead['lexeme'] == '{':
+                    self.match('{')
+                    ans = self.main_class_content()
+                    if self._lookahead['lexeme'] == '}':
+                        self.match('}')
+                        return ans
+        
+        return False
+    
+    def main_class_content(self):
+        return self.variable_block() and self.object_block() and self.statement_sequence()
+    
+    
+    def object_block(self):
+        if self._lookahead['lexeme'] == 'objects':
+            self.match('objects')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                self.object()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
+                    return True
+                else:
+                    return False
+            else:
+                return False
+                
+    
+    def statement_sequence(self):
+        if self.statement() and self.statement_sequence():
+            pass
+        elif self.command() and self.statement_sequence():
+            pass
+        elif self.expression_sequence() and self.statement_sequence():
+            pass
+        
+    def statement(self):
+        if self.if_command():
+            pass
+        elif self.for_command():
+            pass
+        elif self._lookahead['lexeme'] == 'pass':
+            return True
+        
+        return False
+            
+    
+        """
+                if self._lookahead['lexeme'] == 'variables':
+            self.match('variable')
+            return self.variable_block()
+        elif self._lookahead['lexeme'] == 'objects':
+            self.match('object')
+            return self.object_block()
+        elif self._lookahead['lexeme'] == 'if':
+            self.match('if')
+            return self.statement()
+        """
+
+            
+        
+"""
     
     def varcont(self):
         return self.varinit() and self.varfinal()
@@ -152,189 +400,4 @@ class GoatParser:
                 elif self._lookahead['lexeme'] == ';':
                     return True
         return False
-    
-    def vetor(self):
-        if self.value():
-            return self.vetorcont()
-        return False
-
-    def vetorcont(self):
-        if self._lookahead['lexeme'] == ',':
-            self.match(',')
-            return self.vetor()
-        elif self._lookahead['lexeme'] == '}':
-            self.match('}')
-            return True
-        return False
-    
-    def varfinal(self):
-        if self._lookahead['lexeme'] == ',':
-            self.match(',')
-            return self.varalt()
-        elif self._lookahead['lexeme'] == ';':
-            self.match(';')
-            return self.varfim()
-        elif self._lookahead['lexeme'] == '.':
-            self.match('.')
-            return self.varinit()
-        return False
-    
-    def varalt(self):
-        if self.ide():
-            return self.varcont()        
-        return False
-    
-    def varfim(self):
-        if self._lookahead['lexeme'] == '}':
-            return self.match('}')
-        return self.variable()
-
-    def match(self, symbol):
-        if symbol == self._lookahead['lexeme']:
-            self._lookahead = self.next_token()
-            return True
-        else:
-            # print(f"expected {symbol}, found {self._lookahead['lexeme']}\n")
-            return False
-
-    def next_token(self):
-        if (self._token_counter < len(self._input_tokens)-1):
-            self._token_counter += 1
-        return self._input_tokens[self._token_counter]
-
-    def constant_block(self):
-        if self._lookahead['lexeme'] == '{':
-            self.match('{')
-            if self.constant():
-                if self._lookahead['lexeme'] == '}':
-                    self.match('}')
-            else:
-                return False
-        return True
-
-    def constant(self):
-        if self.type():
-            return self.constant_alt()
-        # Pode ser vazio
-        return True
-
-    def constant_alt(self):
-        if self.constant_alt_mtrz() and self.ide():
-            if self._lookahead['lexeme'] == '=':
-                self.match('=')
-                if self.assignment_value() and self.constant_same_line():
-                    if self._lookahead['lexeme'] == ';':
-                        self.match(';')
-                        return self.constant()
-                else:
-                    return False
-        else:
-            return False
-
-    def constant_alt_mtrz(self):
-        if self._lookahead['lexeme'] == '[':
-            self.match('[')
-            if self.number():
-                if self._lookahead['lexeme'] == ']':
-                    self.match(']')
-                    return True
-            else:
-                return False
-
-        # pode ser vazio
-        return True
-
-    def assignment_value(self):
-        if self.ide():
-            return self.object_value()
-        elif self.value():
-            return True
-        elif self.array():
-            return True
-        # fazer CAC
-        return False
-
-        #fazer CAC
-        return False
-    
-    def constant_same_line(self):
-        if self._lookahead['lexeme'] == ',':
-            self.match(',')
-            if self.ide():
-                if self._lookahead['lexeme'] == '=':
-                    self.match('=')
-                    return self.assignment_value() and self.constant_same_line()
-        else:
-            return True
-        # Rever isso aqui!
-        return False
-
-    def ide(self):
-        if self._lookahead['token_type'] == 'IDE':
-            self.match(self._lookahead['lexeme'])
-            return True
-        return False
-
-    def type(self):
-        if self._lookahead['lexeme'] == 'int':
-            self.match('int')
-        elif self._lookahead['lexeme'] == 'string':
-            self.match('string')
-        elif self._lookahead['lexeme'] == 'boolean':
-            self.match('boolean')
-        elif self._lookahead['lexeme'] == 'real':
-            self.match('real')
-        else:
-            return False  # ERRO
-
-        return True
-
-    def array(self):
-        if self._lookahead['lexeme'] == '[':
-            self.match('[')
-            return self.array_value() and self.more_array_value()
-
-    def array_value(self):
-        if self.possible_value():
-            pass
-        elif self.array():
-            pass
-
-        return False
-
-    def object_value(self):
-        if self._lookahead['lexeme'] == '.':
-            self.match('.')
-            return self.ide()
-
-        return True
-
-    def value(self):
-        if self._lookahead['token_type'] == 'NRO':
-            return self.number()
-        elif self._lookahead['token_type'] == 'CAC':
-            return self.match(self._lookahead['lexeme'])
-        elif self._lookahead['token_type'] == 'CAC':
-            return self.match(self._lookahead['lexeme'])
-        elif self._lookahead['token_type'] == 'IDE':
-            return self.ide()
-        return False
-
-    def follow(self, k=1):
-        return self._input_tokens[self.i+k]
-
-    def number(self):
-        if self._lookahead['token_type'] == 'NRO':
-            self.match(self._lookahead['lexeme'])
-            return True
-
-        return False
-
-    def possible_value(self):
-        if self._lookahead['token_type'] == 'IDE':
-            self.match(self.lookahead['lexeme'])
-            return self.object_value()
-        elif self.value():
-            return True
-
-        return True
+"""
