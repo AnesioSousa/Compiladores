@@ -21,6 +21,7 @@ class GoatParser:
         
     def program(self):
         ans = self.variable_block()
+        ans = self.variable_block()
         if not ans:
             self.error()
         return ans
@@ -59,6 +60,13 @@ class GoatParser:
                 self.variable()
                 if self._lookahead['lexeme'] == '}':
                     self.match('}')
+        if self._lookahead['lexeme'] == 'variables':
+            self.match('variables')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                self.variable()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
 
     def variable(self):
         ans=False
@@ -66,6 +74,7 @@ class GoatParser:
             if self.ide():
                 if self.optional_value() and self.variable_same_line():
                     if self._lookahead['lexeme'] == ';':
+                        self.match(';')
                         self.match(';')
                         return self.variable()
         elif self.ide():
@@ -103,14 +112,16 @@ class GoatParser:
     
     def variable_same_line(self):
         #Cade o match?
+        #Cade o match?
         if self._lookahead['lexeme'] == ',':
             if self.ide():
                 return self.optional_value() and self.variable_same_line()
-            
+                        
     def optional_value(self):
         if self._lookahead['lexeme'] == '=':
             self.match('=')
             self.assignment_value()
+            return True
             return True
         else:
             return False
@@ -230,6 +241,12 @@ class GoatParser:
         elif self._lookahead['lexeme'] == '[':
             return self.B()
             
+        if self.array() and self._lookahead['token_type']=='IDE':
+            return True
+        
+        elif self._lookahead['lexeme'] == '[':
+            return self.B()
+            
         return False  # ERRO
 
     def array(self):
@@ -249,10 +266,29 @@ class GoatParser:
             elif self._lookahead['lexeme'] == ',':
                 self.match(',')
                 return self.possible_value()
+            elif self.more_array_value():
+                
         elif self.array():
             return True
 
         return False
+    
+    def possible_value(self):
+        if self.ide():
+            return self.object_value()
+        elif self.value():
+            return True
+
+        return True
+   
+    def more_array_value(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            if self.number() and self.more_array_value():
+                    return True
+        return True
+    
+
     
     def possible_value(self):
         if self.ide():
