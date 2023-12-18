@@ -66,11 +66,13 @@ class GoatParser:
         return ans
     
     def variable_block(self):
-         if self._lookahead['lexeme'] == '{':
-            self.match('{')
-            self.variable()
-            if self._lookahead['lexeme'] == '}':
-                self.match('}')
+        if self._lookahead['lexeme'] == 'variables':
+            self.match('variables')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                self.variable()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
 
     def variable(self):
         ans=False
@@ -262,6 +264,9 @@ class GoatParser:
             if self._lookahead['lexeme'] == ']':
                 self.match(']')
                 return True
+            elif self._lookahead['lexeme'] == ',':
+                self.match(',')
+                return self.possible_value()
         elif self.array():
             return True
 
