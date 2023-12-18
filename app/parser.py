@@ -20,7 +20,10 @@ class GoatParser:
         self.last_type = None
     
     def program(self):
-        return self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
+        ans = self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
+        if not ans:
+            self.error()
+        return ans
     
     """
      def program(self):
@@ -35,6 +38,15 @@ class GoatParser:
     
     """
    
+    def error(self):
+        sync_tokens = [';']
+        print(f"Syntax Error: Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n") 
+
+        while(self._lookahead['lexeme'] not in sync_tokens):
+            self._lookahead = self.next_token()
+            if(self._token_counter == len(self._input_tokens)-1):
+                break
+        self._lookahead = self.next_token()
 
     def a(self):
         ans = False
