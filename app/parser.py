@@ -406,6 +406,12 @@ class GoatParser:
                 if self._lookahead['lexeme'] == ')':
                     self.match(')')
                     return True
+        elif self._lookahead['lexeme'] == 'this':
+            self.match('this')
+            if self._lookahead['lexeme'] == '.':
+                self.match('.')
+                if self.ide():
+                    return True
                 
         return False
     
@@ -578,6 +584,8 @@ class GoatParser:
         if self.type():
             if self.ide():
                 self.parameter_value_list()
+                
+        return True
         
             
     def parameter_value_list(self):
@@ -763,3 +771,50 @@ class GoatParser:
             return True
         
         return False
+    
+    def methods(self):
+        if self._lookahead['lexeme'] == 'methods':
+            self.match('methods')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                self.method()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
+                    
+                    
+    def method(self):
+        if self.type():
+            if self.ide():
+                if self._lookahead['lexeme'] == '(':
+                    self.match('(')
+                    self.parameter()
+                    if self._lookahead['lexeme'] == ')':
+                        self.match(')')
+                        if self._lookahead['lexeme'] == '{':
+                            self.match('{')
+                            self.statement_sequence()
+                            if self._lookahead['lexeme'] == 'return':
+                                self.match('return')
+                                if self.value():
+                                    if self._lookahead['lexeme'] == ';':
+                                        self.match(';')
+                                        if self._lookahead['lexeme'] == '}':
+                                            self.match('}')
+                                            self.method()
+        elif self._lookahead['lexeme'] == 'void':
+            if self.ide():
+                if self._lookahead['lexeme'] == '(':
+                    self.match('(')
+                    self.parameter()
+                    if self._lookahead['lexeme'] == ')':
+                        self.match(')')
+                        if self._lookahead['lexeme'] == '{':
+                            self.match('{')
+                            self.statement_sequence()
+                            if self._lookahead['lexeme'] == '}':
+                                self.match('}')
+                                self.method()
+                                
+        
+
+                                                
