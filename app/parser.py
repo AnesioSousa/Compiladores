@@ -92,9 +92,39 @@ class GoatParser:
                 if self.optional_value() and self.variable_same_line():
                     if self._lookahead['lexeme'] == ';':
                         return self.variable()
+        elif self.ide():
+            if self.for_init():
+                if self._lookahead['lexeme'] == ';':
+                    self.match(';')
+                    ans = True
+        
         if ans:
+            
             print("Variable read successfully")
         return ans
+    
+    def for_init(self):
+        if self._lookahead['lexeme'] == '=':
+            self.match('=')
+            return self.check_for_int()
+        else:
+            return False
+    
+    def check_for_int(self):
+        lexeme = self._lookahead['lexeme']
+        try:
+            int(lexeme)
+
+            # Se a conversão for bem-sucedida, significa que é um número inteiro
+            self.match(lexeme)
+            return True
+        except ValueError:
+            # Se a conversão falhar, significa que não é um número inteiro
+            # Adicione aqui qualquer tratamento adicional desejado
+            print(f"Syntax Error: The for statement initialization needs to be an integer! Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n")
+            self.error()
+
+        return False
     
     def variable_same_line(self):
         if self._lookahead['lexeme'] == ',':
@@ -107,6 +137,8 @@ class GoatParser:
             self.assignment_value()
         else:
             return False
+        
+        
 
     def assignment_value(self):
         if self.ide():
