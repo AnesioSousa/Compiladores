@@ -448,10 +448,27 @@ class GoatParser:
                     return True
         elif self._lookahead['token_type'] == 'IDE':
             return self.assignment_value()
-                
-                
+        
         return False
+    def logical_or_expression(self):
+        if self.logical_not_expression() and self.logical_or_expression_alt():
+            return True
+        elif self._lookahead['lexeme'] == '(':
+            self.match('(')
+            if self.logical_or_expression():
+                if self._lookahead['lexeme'] == ')':
+                    self.match(')')
+                    if self.logical_or_expression_alt():
+                        return True 
     
+    def logical_or_expression_alt(self):
+        if self._lookahead['lexeme'] == '||':
+            self.match('||')
+            return self.logical_not_expression() and self.logical_or_expression_alt()
+        
+        
+        return True
+        
     def logical_or_expression(self):
         if self.logical_not_expression():
             pass
