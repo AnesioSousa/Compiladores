@@ -443,6 +443,9 @@ class GoatParser:
                 self.match('.')
                 if self.ide():
                     return True
+        elif self._lookahead['token_type'] == 'IDE':
+            return self.assignment_value()
+                
                 
         return False
     
@@ -726,8 +729,8 @@ class GoatParser:
                     return self.logical_and_expression()
         elif self.ide():
             if self._lookahead['lexeme'] == '=':
-                    self.match('=')
-                    return self.logical_and_expression()
+                self.match('=')
+                return self.logical_and_expression()
                 
         return False
     
