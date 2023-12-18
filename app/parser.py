@@ -20,7 +20,7 @@ class GoatParser:
         self._output = open(f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
         
     def program(self):
-        ans = self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
+        ans = self.variable_block()
         if not ans:
             self.error()
         return ans
@@ -43,29 +43,15 @@ class GoatParser:
             
         return ans
     
-    def b(self):
-        ans = True
-        if self._lookahead['lexeme'] == 'const':
-            self.match('const')
-            ans = self.constant_block() and self.c()
-        
-        return ans
-        
-    def c(self):
-        ans = False
-        if self._lookahead['lexeme'] == 'objects':
-            self.match('objects')
-            ans = self.objects()
-        elif self._lookahead['lexeme'] == 'class':
-            self.match('class')
-            if self._lookahead['lexeme'] == 'main':
-                self.match('main')
-                ans = self.main()
-            elif self.class_block():
-                ans = self.c()
-        return ans
     
     def variable_block(self):
+        if self._lookahead['lexeme'] == 'variables':
+            self.match('variables')
+            if self._lookahead['lexeme'] == '{':
+                self.match('{')
+                self.variable()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
         if self._lookahead['lexeme'] == 'variables':
             self.match('variables')
             if self._lookahead['lexeme'] == '{':
@@ -80,6 +66,7 @@ class GoatParser:
             if self.ide():
                 if self.optional_value() and self.variable_same_line():
                     if self._lookahead['lexeme'] == ';':
+                        self.match(';')
                         return self.variable()
         elif self.ide():
             if self.for_init():
@@ -109,21 +96,22 @@ class GoatParser:
             return True
         except ValueError:
             # Se a conversão falhar, significa que não é um número inteiro
-            # Adicione aqui qualquer tratamento adicional desejado
             self._output.write(f"Syntax Error: The for statement initialization needs to be an integer! Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n")
             self.error()
 
         return False
     
     def variable_same_line(self):
+        #Cade o match?
         if self._lookahead['lexeme'] == ',':
             if self.ide():
                 return self.optional_value() and self.variable_same_line()
-
+            
     def optional_value(self):
         if self._lookahead['lexeme'] == '=':
             self.match('=')
             self.assignment_value()
+            return True
         else:
             return False
         
@@ -221,7 +209,7 @@ class GoatParser:
             
             return True
             
-        return False 
+        return False
 
     def A(self):
         if self._lookahead['lexeme'] == 'int':
@@ -236,28 +224,22 @@ class GoatParser:
             return False  # ERRO
         
     def B(self):
-        if self._lookahead['lexeme'] in ['[']:
-            return self.array()
-                
+        if self.array() and self._lookahead['token_type']=='IDE':
+            return True
+        
+        elif self._lookahead['lexeme'] == '[':
+            return self.B()
+            
         return False  # ERRO
 
     def array(self):
         if self._lookahead['lexeme'] == '[':
             self.match('[')
             if self.array_value() and self.more_array_value():
-                if self._lookahead['lexeme'] == ']':
-                    self.match(']')
-                    return True
+                return True
             return True
             
         return False
-   
-    def more_array_value(self):
-        if self._lookahead['lexeme'] == ',':
-            self.match(',')
-            if self.array_value() and self.more_array_value():
-                    return True
-        return True
     
     def array_value(self):
         if self.possible_value():
@@ -271,6 +253,23 @@ class GoatParser:
             return True
 
         return False
+    
+    def possible_value(self):
+        if self.ide():
+            return self.object_value()
+        elif self.value():
+            return True
+
+        return True
+   
+    def more_array_value(self):
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            if self.number() and self.more_array_value():
+                    return True
+        return True
+    
+
 
     def object_value(self):
         if self._lookahead['lexeme'] == '.':
@@ -297,14 +296,6 @@ class GoatParser:
             return True
 
         return False
-
-    def possible_value(self):
-        if self.ide():
-            return self.object_value()
-        elif self.value():
-            return True
-
-        return True
     
     def main_class(self):
         if self._lookahead['lexeme'] == 'class':
