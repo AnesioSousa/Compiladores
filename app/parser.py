@@ -12,13 +12,13 @@ class GoatParser:
     capazes de gerar árvores sintáticas partindo de tokens de entrada.
     """
 
-    def __init__(self, input_tokens=[]):
+    def __init__(self, file_name, input_tokens=[]):
+        self._file_name = file_name
         self._input_tokens = input_tokens
         self._lookahead = self._input_tokens[0]
         self._token_counter = 0
-        self.symbol_table = []
-        self.last_type = None
-    
+        self._output = open(f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
+        
     def program(self):
         ans = self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
         if not ans:
@@ -40,7 +40,7 @@ class GoatParser:
    
     def error(self):
         sync_tokens = [';']
-        print(f"Syntax Error: Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n") 
+        self._output.write(f"Syntax Error: Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n") 
 
         while(self._lookahead['lexeme'] not in sync_tokens):
             self._lookahead = self.next_token()
@@ -121,7 +121,7 @@ class GoatParser:
         except ValueError:
             # Se a conversão falhar, significa que não é um número inteiro
             # Adicione aqui qualquer tratamento adicional desejado
-            print(f"Syntax Error: The for statement initialization needs to be an integer! Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n")
+            self._output.write(f"Syntax Error: The for statement initialization needs to be an integer! Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n")
             self.error()
 
         return False
