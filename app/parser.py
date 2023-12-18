@@ -24,19 +24,6 @@ class GoatParser:
         if not ans:
             self.error()
         return ans
-    
-    """
-     def program(self):
-        ans = True
-        if self._lookahead['lexeme'] == 'const':
-            self.match('const')
-            ans = self.constant_block() and self.a()
-        elif self._lookahead['lexeme'] == 'variables':
-            self.match('variables')
-            ans = self.variable() and self.b()
-        return ans
-    
-    """
    
     def error(self):
         sync_tokens = [';']
@@ -858,7 +845,3 @@ class GoatParser:
                             if self._lookahead['lexeme'] == '}':
                                 self.match('}')
                                 self.method()
-                                
-        
-
-                                                
