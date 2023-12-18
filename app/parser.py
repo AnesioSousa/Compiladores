@@ -182,7 +182,10 @@ class GoatParser:
 
     def assignment_value(self):
         if self.ide():
-            return self.object_value()
+            if self.object_value():
+                return True
+            elif self.access_expression():
+                return True
         elif self.value():
             return True
         elif self.array():
