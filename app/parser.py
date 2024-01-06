@@ -78,13 +78,13 @@ class GoatParser:
         return ans
     
     def variable_block(self):
-        if self._current_token['lexeme'] == 'variables':
-            self.match('variables')
-            if self._current_token['lexeme'] == '{':
-                self.match('{')
-                self.variable()
-                if self._current_token['lexeme'] == '}':
-                    self.match('}')
+        self.match('variables')
+        if self._current_token['lexeme'] == '{':
+            self.match('{')
+            self.variable()
+            if self._current_token['lexeme'] == '}':
+                self.match('}')
+        print("Variables read successfully")
 
     def variable(self):
         ans=False
@@ -166,16 +166,16 @@ class GoatParser:
         return self._input_tokens[self._token_counter]
 
     def constant_block(self):
-        if self._current_token['lexeme'] == 'const':
-            self.match('const')
-            if self._current_token['lexeme'] == '{':
-                self.match('{')
-                if self.constant():
-                    if self._current_token['lexeme'] == '}':
-                        self.match('}')
-                else:
-                    return False
-            print('Const read sucessfully')
+        self.match('const')
+        if self._current_token['lexeme'] == '{':
+            self.match('{')
+            if self.constant():
+                if self._current_token['lexeme'] == '}':
+                    self.match('}')
+            else:
+                return False
+        print('Const read sucessfully')
+        
         return True
 
     def constant(self):
@@ -319,16 +319,16 @@ class GoatParser:
         return True
     
     def main_class(self):
-        if self._current_token['lexeme'] == 'class':
-            self.match('class')
-            if self._current_token['lexeme'] == 'main':
-                self.match('main')
-                if self._current_token['lexeme'] == '{':
-                    self.match('{')
-                    ans = self.main_class_content()
-                    if self._current_token['lexeme'] == '}':
-                        self.match('}')
-                        return ans
+        self.match('class')
+        if self._current_token['lexeme'] == 'main':
+            self.match('main')
+            if self._current_token['lexeme'] == '{':
+                self.match('{')
+                ans = self.main_class_content()
+                if self._current_token['lexeme'] == '}':
+                    self.match('}')
+                    print("Main class content was read successfully")
+                    return ans
         
         return False
     
@@ -337,18 +337,18 @@ class GoatParser:
     
     
     def object_block(self):
-        if self._current_token['lexeme'] == 'objects':
-            self.match('objects')
-            if self._current_token['lexeme'] == '{':
-                self.match('{')
-                self.object()
-                if self._current_token['lexeme'] == '}':
-                    self.match('}')
-                    return True
-                else:
-                    return False
+        self.match('objects')
+        if self._current_token['lexeme'] == '{':
+            self.match('{')
+            self.object()
+            if self._current_token['lexeme'] == '}':
+                self.match('}')
+                print("Object block was read successfully")
+                return True
             else:
                 return False
+        else:
+            return False
     
     def object(self):
         if self.ide():
@@ -665,18 +665,18 @@ class GoatParser:
             self.parameter()
             
     def class_block(self):
-        if self._current_token['lexeme'] == 'class':
-            self.match('class')
-            if self.ide():
-                self.class_extends()
-                if self._current_token['lexeme'] == '{':
-                    self.match('{')
-                    if self.class_content():
-                        if self._current_token['lexeme'] == '}':
-                            self.match('}')
-                            self.class_block()
-            else:
-                return False
+        self.match('class')
+        if self.ide():
+            self.class_extends()
+            if self._current_token['lexeme'] == '{':
+                self.match('{')
+                if self.class_content():
+                    if self._current_token['lexeme'] == '}':
+                        self.match('}')
+                        self.class_block()
+            print("Class block was read successfully")
+        else:
+            return False
                         
     def class_extends(self):
         if self._current_token['lexeme'] == 'extends':
