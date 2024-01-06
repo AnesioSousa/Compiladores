@@ -175,7 +175,7 @@ class GoatParser:
                         self.match('}')
                 else:
                     return False
-        print('Const read sucessfully')
+            print('Const read sucessfully')
         return True
 
     def constant(self):
