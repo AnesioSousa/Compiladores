@@ -12,12 +12,19 @@ class GoatParser:
     capazes de gerar árvores sintáticas partindo de tokens de entrada.
     """
 
+    """
     def __init__(self, file_name, input_tokens=[]):
         self._file_name = file_name
         self._input_tokens = input_tokens
         self._current_token = self._input_tokens[0]
         self._token_counter = 0
         self._output = open(f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
+    """
+    
+    def __init__(self,input_tokens):
+        self._input_tokens = input_tokens
+        self._current_token = self._input_tokens[0]
+        self._token_counter = 0
         
     def program(self):
         if self._current_token['lexeme'] == 'const':
@@ -39,7 +46,7 @@ class GoatParser:
    
     def error(self):
         sync_tokens = [';']
-        self._output.write(f"Syntax Error: Found: '{self._current_token['lexeme']}', number_line: {self._current_token['number_line']}\n") 
+        #self._output.write(f"Syntax Error: Found: '{self._current_token['lexeme']}', number_line: {self._current_token['number_line']}\n") 
 
         while(self._current_token['lexeme'] not in sync_tokens):
             self._current_token = self.next_token()
@@ -84,7 +91,7 @@ class GoatParser:
             self.variable()
             if self._current_token['lexeme'] == '}':
                 self.match('}')
-        print("Variables read successfully")
+            print("Variables read successfully")
 
     def variable(self):
         ans=False
