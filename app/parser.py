@@ -15,7 +15,7 @@ class GoatParser:
     def __init__(self, file_name, input_tokens=[]):
         self._file_name = file_name
         self._input_tokens = input_tokens
-        self._lookahead = self._input_tokens[0]
+        self._current_token = self._input_tokens[0]
         self._token_counter = 0
         self._output = open(f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
         
@@ -27,17 +27,17 @@ class GoatParser:
    
     def error(self):
         sync_tokens = [';']
-        self._output.write(f"Syntax Error: Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n") 
+        self._output.write(f"Syntax Error: Found: '{self._current_token['lexeme']}', number_line: {self._current_token['number_line']}\n") 
 
-        while(self._lookahead['lexeme'] not in sync_tokens):
-            self._lookahead = self.next_token()
+        while(self._current_token['lexeme'] not in sync_tokens):
+            self._current_token = self.next_token()
             if(self._token_counter == len(self._input_tokens)-1):
                 break
-        self._lookahead = self.next_token()
+        self._current_token = self.next_token()
 
     def a(self):
         ans = False
-        if self._lookahead['lexeme'] == 'variables':
+        if self._current_token['lexeme'] == 'variables':
             self.match('variables')
             ans = self.variable_block() and self.c()
             
@@ -45,7 +45,7 @@ class GoatParser:
     
     def b(self):
         ans = True
-        if self._lookahead['lexeme'] == 'const':
+        if self._current_token['lexeme'] == 'const':
             self.match('const')
             ans = self.constant_block() and self.c()
         
@@ -53,12 +53,12 @@ class GoatParser:
         
     def c(self):
         ans = False
-        if self._lookahead['lexeme'] == 'objects':
+        if self._current_token['lexeme'] == 'objects':
             self.match('objects')
             ans = self.objects()
-        elif self._lookahead['lexeme'] == 'class':
+        elif self._current_token['lexeme'] == 'class':
             self.match('class')
-            if self._lookahead['lexeme'] == 'main':
+            if self._current_token['lexeme'] == 'main':
                 self.match('main')
                 ans = self.main()
             elif self.class_block():
@@ -66,12 +66,12 @@ class GoatParser:
         return ans
     
     def variable_block(self):
-        if self._lookahead['lexeme'] == 'variables':
+        if self._current_token['lexeme'] == 'variables':
             self.match('variables')
-            if self._lookahead['lexeme'] == '{':
+            if self._current_token['lexeme'] == '{':
                 self.match('{')
                 self.variable()
-                if self._lookahead['lexeme'] == '}':
+                if self._current_token['lexeme'] == '}':
                     self.match('}')
 
     def variable(self):
@@ -79,11 +79,11 @@ class GoatParser:
         if self.type():
             if self.ide():
                 if self.optional_value() and self.variable_same_line():
-                    if self._lookahead['lexeme'] == ';':
+                    if self._current_token['lexeme'] == ';':
                         return self.variable()
         elif self.ide():
             if self.for_init():
-                if self._lookahead['lexeme'] == ';':
+                if self._current_token['lexeme'] == ';':
                     self.match(';')
                     ans = True
         
@@ -93,14 +93,14 @@ class GoatParser:
         return ans
     
     def for_init(self):
-        if self._lookahead['lexeme'] == '=':
+        if self._current_token['lexeme'] == '=':
             self.match('=')
             return self.check_for_int()
         else:
             return False
     
     def check_for_int(self):
-        lexeme = self._lookahead['lexeme']
+        lexeme = self._current_token['lexeme']
         try:
             int(lexeme)
 
@@ -110,18 +110,18 @@ class GoatParser:
         except ValueError:
             # Se a conversão falhar, significa que não é um número inteiro
             # Adicione aqui qualquer tratamento adicional desejado
-            self._output.write(f"Syntax Error: The for statement initialization needs to be an integer! Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n")
+            self._output.write(f"Syntax Error: The for statement initialization needs to be an integer! Found: '{self._current_token['lexeme']}', number_line: {self._current_token['number_line']}\n")
             self.error()
 
         return False
     
     def variable_same_line(self):
-        if self._lookahead['lexeme'] == ',':
+        if self._current_token['lexeme'] == ',':
             if self.ide():
                 return self.optional_value() and self.variable_same_line()
 
     def optional_value(self):
-        if self._lookahead['lexeme'] == '=':
+        if self._current_token['lexeme'] == '=':
             self.match('=')
             self.assignment_value()
         else:
@@ -141,11 +141,11 @@ class GoatParser:
 
     
     def match(self, symbol):
-        if symbol == self._lookahead['lexeme']:
-            self._lookahead = self.next_token()
+        if symbol == self._current_token['lexeme']:
+            self._current_token = self.next_token()
             return True
         else:
-            # print(f"expected {symbol}, found {self._lookahead['lexeme']}\n")
+            # print(f"expected {symbol}, found {self._current_token['lexeme']}\n")
             return False
 
     def next_token(self):
@@ -154,12 +154,12 @@ class GoatParser:
         return self._input_tokens[self._token_counter]
 
     def constant_block(self):
-        if self._lookahead['lexeme'] == 'const':
+        if self._current_token['lexeme'] == 'const':
             self.match('const')
-            if self._lookahead['lexeme'] == '{':
+            if self._current_token['lexeme'] == '{':
                 self.match('{')
                 if self.constant():
-                    if self._lookahead['lexeme'] == '}':
+                    if self._current_token['lexeme'] == '}':
                         self.match('}')
                 else:
                     return False
@@ -169,13 +169,13 @@ class GoatParser:
     def constant(self):
         if self.type():
             if self.ide():
-                if self._lookahead['lexeme'] == '=':
+                if self._current_token['lexeme'] == '=':
                     self.match('=')
                     if self.assignment_value() and self.constant_same_line():
-                        if self._lookahead['lexeme'] == ';':
+                        if self._current_token['lexeme'] == ';':
                             self.match(';')
                             return self.constant()
-        elif self._lookahead['lexeme'] == '}':
+        elif self._current_token['lexeme'] == '}':
             return True
                         
         return False
@@ -196,10 +196,10 @@ class GoatParser:
         return False
     
     def constant_same_line(self):
-        if self._lookahead['lexeme'] == ',':
+        if self._current_token['lexeme'] == ',':
             self.match(',')
             if self.ide():
-                if self._lookahead['lexeme'] == '=':
+                if self._current_token['lexeme'] == '=':
                     self.match('=')
                     return self.assignment_value() and self.constant_same_line()
         else:
@@ -208,15 +208,15 @@ class GoatParser:
         return False
 
     def ide(self):
-        if self._lookahead['token_type'] == 'IDE':
-            self.match(self._lookahead['lexeme'])
+        if self._current_token['token_type'] == 'IDE':
+            self.match(self._current_token['lexeme'])
             return True
         return False
 
     def type(self):
-        if self._lookahead['lexeme'] in ['int','string', 'boolean', 'real']:
+        if self._current_token['lexeme'] in ['int','string', 'boolean', 'real']:
             self.A()
-            if self._lookahead['lexeme'] in ['[']:
+            if self._current_token['lexeme'] in ['[']:
                 return self.B()
             
             return True
@@ -224,28 +224,28 @@ class GoatParser:
         return False 
 
     def A(self):
-        if self._lookahead['lexeme'] == 'int':
+        if self._current_token['lexeme'] == 'int':
             self.match('int')
-        elif self._lookahead['lexeme'] == 'string':
+        elif self._current_token['lexeme'] == 'string':
             self.match('string')
-        elif self._lookahead['lexeme'] == 'boolean':
+        elif self._current_token['lexeme'] == 'boolean':
             self.match('boolean')
-        elif self._lookahead['lexeme'] == 'real':
+        elif self._current_token['lexeme'] == 'real':
             self.match('real')
         else:
             return False  # ERRO
         
     def B(self):
-        if self._lookahead['lexeme'] in ['[']:
+        if self._current_token['lexeme'] in ['[']:
             return self.array()
                 
         return False  # ERRO
 
     def array(self):
-        if self._lookahead['lexeme'] == '[':
+        if self._current_token['lexeme'] == '[':
             self.match('[')
             if self.array_value() and self.more_array_value():
-                if self._lookahead['lexeme'] == ']':
+                if self._current_token['lexeme'] == ']':
                     self.match(']')
                     return True
             return True
@@ -253,7 +253,7 @@ class GoatParser:
         return False
    
     def more_array_value(self):
-        if self._lookahead['lexeme'] == ',':
+        if self._current_token['lexeme'] == ',':
             self.match(',')
             if self.array_value() and self.more_array_value():
                     return True
@@ -261,10 +261,10 @@ class GoatParser:
     
     def array_value(self):
         if self.possible_value():
-            if self._lookahead['lexeme'] == ']':
+            if self._current_token['lexeme'] == ']':
                 self.match(']')
                 return True
-            elif self._lookahead['lexeme'] == ',':
+            elif self._current_token['lexeme'] == ',':
                 self.match(',')
                 return self.possible_value()
         elif self.array():
@@ -273,27 +273,27 @@ class GoatParser:
         return False
 
     def object_value(self):
-        if self._lookahead['lexeme'] == '.':
+        if self._current_token['lexeme'] == '.':
             self.match('.')
             return self.ide()
 
         return True
 
     def value(self):
-        if self._lookahead['token_type'] == 'NRO':
+        if self._current_token['token_type'] == 'NRO':
             return self.number()
-        elif self._lookahead['token_type'] == 'CAC':
-            return self.match(self._lookahead['lexeme'])
-        elif self._lookahead['token_type'] == 'IDE':
+        elif self._current_token['token_type'] == 'CAC':
+            return self.match(self._current_token['lexeme'])
+        elif self._current_token['token_type'] == 'IDE':
             return self.ide()
         #Rever isso!
-        elif self._lookahead['lexeme'] in ['true', 'false']:
+        elif self._current_token['lexeme'] in ['true', 'false']:
             return self.bool()
         return False
 
     def number(self):
-        if self._lookahead['token_type'] == 'NRO':
-            self.match(self._lookahead['lexeme'])
+        if self._current_token['token_type'] == 'NRO':
+            self.match(self._current_token['lexeme'])
             return True
 
         return False
@@ -307,14 +307,14 @@ class GoatParser:
         return True
     
     def main_class(self):
-        if self._lookahead['lexeme'] == 'class':
+        if self._current_token['lexeme'] == 'class':
             self.match('class')
-            if self._lookahead['lexeme'] == 'main':
+            if self._current_token['lexeme'] == 'main':
                 self.match('main')
-                if self._lookahead['lexeme'] == '{':
+                if self._current_token['lexeme'] == '{':
                     self.match('{')
                     ans = self.main_class_content()
-                    if self._lookahead['lexeme'] == '}':
+                    if self._current_token['lexeme'] == '}':
                         self.match('}')
                         return ans
         
@@ -325,12 +325,12 @@ class GoatParser:
     
     
     def object_block(self):
-        if self._lookahead['lexeme'] == 'objects':
+        if self._current_token['lexeme'] == 'objects':
             self.match('objects')
-            if self._lookahead['lexeme'] == '{':
+            if self._current_token['lexeme'] == '{':
                 self.match('{')
                 self.object()
-                if self._lookahead['lexeme'] == '}':
+                if self._current_token['lexeme'] == '}':
                     self.match('}')
                     return True
                 else:
@@ -341,20 +341,20 @@ class GoatParser:
     def object(self):
         if self.ide():
             if self.ide():
-                if self._lookahead['lexeme'] == '=':
+                if self._current_token['lexeme'] == '=':
                     self.match('=')
                     if self.ide():
-                        if self._lookahead['lexeme'] == '->':
+                        if self._current_token['lexeme'] == '->':
                             self.match('->')
-                            if self._lookahead['lexeme'] == 'constructor':
+                            if self._current_token['lexeme'] == 'constructor':
                                 self.match('constructor')
-                                if self._lookahead['lexeme'] == '(':
+                                if self._current_token['lexeme'] == '(':
                                     self.match('(')
                                     self.args_list()
-                                    if self._lookahead['lexeme'] == ')':
+                                    if self._current_token['lexeme'] == ')':
                                         self.match(')')
                                         self.object_same_line()
-                                        if self._lookahead['lexeme'] == ';':
+                                        if self._current_token['lexeme'] == ';':
                                             self.match(';')
                                             self.object()
                                         else:
@@ -365,20 +365,20 @@ class GoatParser:
         return True
                         
     def object_same_line(self):
-        if self._lookahead['lexeme'] == ',':
+        if self._current_token['lexeme'] == ',':
             self.match(',')
             if self.ide():
-                if self._lookahead['lexeme'] == '=':
+                if self._current_token['lexeme'] == '=':
                     self.match('=')
                     if self.ide():
-                        if self._lookahead['lexeme'] == '->':
+                        if self._current_token['lexeme'] == '->':
                             self.match('->')
-                            if self._lookahead['lexeme'] == 'constructor':
+                            if self._current_token['lexeme'] == 'constructor':
                                 self.match('constructor')
-                                if self._lookahead['lexeme'] == '(':
+                                if self._current_token['lexeme'] == '(':
                                     self.match('(')
                                     self.args_list()
-                                    if self._lookahead['lexeme'] == ')':
+                                    if self._current_token['lexeme'] == ')':
                                         self.match(')')
     
     def statement_sequence(self):
@@ -394,41 +394,41 @@ class GoatParser:
             return True
         elif self.for_statement():
             return True
-        elif self._lookahead['lexeme'] == 'pass':
+        elif self._current_token['lexeme'] == 'pass':
             return True
         
         return False
     
     def if_statement(self):
-        if self._lookahead['lexeme'] == 'if':
+        if self._current_token['lexeme'] == 'if':
             self.match('if')
             if self.condition():
-                if self._lookahead['lexeme'] == 'then':
+                if self._current_token['lexeme'] == 'then':
                     self.match('then')
-                    if self._lookahead['lexeme'] == '{':
+                    if self._current_token['lexeme'] == '{':
                         self.statement_sequence()
-                        if self._lookahead['lexeme'] == '}':
+                        if self._current_token['lexeme'] == '}':
                             self.match('}')
                             self.else_statement()
                         else:
                             return False
                         
     def else_statement(self):
-        if self._lookahead['lexeme'] == 'else':
+        if self._current_token['lexeme'] == 'else':
             self.match('else')
-            if self._lookahead['lexeme'] == '{':
+            if self._current_token['lexeme'] == '{':
                 self.match('{')
                 self.statement_sequence()
-                if self._lookahead['lexeme'] == '}':
+                if self._current_token['lexeme'] == '}':
                     self.match('}')
                     
         return False
     
     def condition(self):
-        if self._lookahead['lexeme'] == '(':
+        if self._current_token['lexeme'] == '(':
             self.match('(')
             if self.logical_and_expression():
-                if self._lookahead['lexeme'] == ')':
+                if self._current_token['lexeme'] == ')':
                     self.match(')')
                     return True
         
@@ -439,35 +439,35 @@ class GoatParser:
             return True
         elif self.logical_or_expression():
             return True
-        elif self._lookahead['lexeme'] == '(':
+        elif self._current_token['lexeme'] == '(':
             self.match('(')
             if self.logical_and_expression():
-                if self._lookahead['lexeme'] == ')':
+                if self._current_token['lexeme'] == ')':
                     self.match(')')
                     return True
-        elif self._lookahead['lexeme'] == 'this':
+        elif self._current_token['lexeme'] == 'this':
             self.match('this')
-            if self._lookahead['lexeme'] == '.':
+            if self._current_token['lexeme'] == '.':
                 self.match('.')
                 if self.ide():
                     return True
-        elif self._lookahead['token_type'] == 'IDE':
+        elif self._current_token['token_type'] == 'IDE':
             return self.assignment_value()
         
         return False
     def logical_or_expression(self):
         if self.logical_not_expression() and self.logical_or_expression_alt():
             return True
-        elif self._lookahead['lexeme'] == '(':
+        elif self._current_token['lexeme'] == '(':
             self.match('(')
             if self.logical_or_expression():
-                if self._lookahead['lexeme'] == ')':
+                if self._current_token['lexeme'] == ')':
                     self.match(')')
                     if self.logical_or_expression_alt():
                         return True 
     
     def logical_or_expression_alt(self):
-        if self._lookahead['lexeme'] == '||':
+        if self._current_token['lexeme'] == '||':
             self.match('||')
             return self.logical_not_expression() and self.logical_or_expression_alt()
         
@@ -478,15 +478,15 @@ class GoatParser:
         if self.logical_not_expression():
             pass
         elif self.logical_or_expression():
-            if self._lookahead['lexeme'] == '||':
+            if self._current_token['lexeme'] == '||':
                 self.match('||')
                 return self.logical_not_expression()
             else:
                 return False
-        elif self._lookahead['lexeme'] == '(':
+        elif self._current_token['lexeme'] == '(':
             self.match('(')
             if self.logical_or_expression():
-                if self._lookahead['lexeme'] == ')':
+                if self._current_token['lexeme'] == ')':
                     self.match(')')
                     return True
                 
@@ -496,7 +496,7 @@ class GoatParser:
     def logical_not_expression(self):
         if self.equality_expression():
             pass
-        elif self._lookahead['lexeme'] == '!':
+        elif self._current_token['lexeme'] == '!':
             self.match('!')
             return self.logical_not_expression()
         
@@ -506,10 +506,10 @@ class GoatParser:
         return self.relational_expression() and self.equality_expression_list()
     
     def equality_expression_list(self):
-        if self._lookahead['lexeme'] == '!=':
+        if self._current_token['lexeme'] == '!=':
             self.match('!=')
             return self.relational_expression()
-        elif self._lookahead['lexeme'] == '==':
+        elif self._current_token['lexeme'] == '==':
             self.match('==')
             return self.relational_expression()
         
@@ -519,35 +519,35 @@ class GoatParser:
         return self.additive_expression() and self.relational_expression_list()
     
     def relational_expression_list(self):
-        if self._lookahead['lexeme'] == '<':
+        if self._current_token['lexeme'] == '<':
             self.match('<')
             return self.additive_expression()
-        elif self._lookahead['lexeme'] == '>':
+        elif self._current_token['lexeme'] == '>':
             self.match('>')
             return self.additive_expression()
-        elif self._lookahead['lexeme'] == '<=':
+        elif self._current_token['lexeme'] == '<=':
             self.match('<=')
             return self.additive_expression()
-        elif self._lookahead['lexeme'] == '>=':
+        elif self._current_token['lexeme'] == '>=':
             self.match('>=')
             return self.additive_expression()
     
     
     def for_statement(self):
-        if self._lookahead['lexeme'] == 'for':
+        if self._current_token['lexeme'] == 'for':
             self.match('for')
-            if self._lookahead['lexeme'] == '(':
+            if self._current_token['lexeme'] == '(':
                 self.match('(')
                 if self.variable() and self.logical_and_expression():
-                    if self._lookahead['lexeme'] == ';':
+                    if self._current_token['lexeme'] == ';':
                         self.match(';')
                         if self.unary_expression():
-                            if self._lookahead['lexeme'] == ')':
+                            if self._current_token['lexeme'] == ')':
                                 self.match(')')
-                                if self._lookahead['lexeme'] == '{':
+                                if self._current_token['lexeme'] == '{':
                                     self.match('{')
                                     self.statement_sequence()
-                                    if self._lookahead['lexeme'] == '}':
+                                    if self._current_token['lexeme'] == '}':
                                         self.match('}')
                                         return True
         return False
@@ -580,10 +580,10 @@ class GoatParser:
         
     def method_call(self):
         if self.ide():
-            if self._lookahead['lexeme'] == '(':
+            if self._current_token['lexeme'] == '(':
                 self.match('(')
                 self.args_list()
-                if self._lookahead['lexeme'] == ')':
+                if self._current_token['lexeme'] == ')':
                     self.match(')')
                     return True
                 
@@ -594,47 +594,47 @@ class GoatParser:
             return True
     
     def assignment_value_list(self):
-        if self._lookahead['lexeme'] == ',':
+        if self._current_token['lexeme'] == ',':
             self.match(',')
             self.args_list()
     
     #Rever isso: Const analisa strings sem precisar disso!
     def str(self):
-        return True if self._lookahead['token_type'] == 'CAC' else False
+        return True if self._current_token['token_type'] == 'CAC' else False
             
     
     def bool(self):
-        return True if self._lookahead['lexeme'] == 'true' or self._lookahead['lexeme'] == 'false' else False
+        return True if self._current_token['lexeme'] == 'true' or self._current_token['lexeme'] == 'false' else False
             
     
     def access_expression_list(self):
-        if self._lookahead['lexeme'] == '->':
+        if self._current_token['lexeme'] == '->':
             self.match('->')
             return self.primary_expression()
-        elif self._lookahead['lexeme'] == '.':
+        elif self._current_token['lexeme'] == '.':
             self.match('.')
             return self.primary_expression()
-        elif self._lookahead['lexeme'] == '[':
+        elif self._current_token['lexeme'] == '[':
             self.match('[')
             if self.primary_expression():
-                if self._lookahead['lexeme'] == ']':
+                if self._current_token['lexeme'] == ']':
                     self.match(']')
                     return True
             
     def unary_expression_list(self):
-        if self._lookahead['lexeme'] == '++':
+        if self._current_token['lexeme'] == '++':
             self.match('++')
-        if self._lookahead['lexeme'] == '--':
+        if self._current_token['lexeme'] == '--':
             self.match('--')
             
     def multiplicative_expression(self):
         return self.unary_expression() and self.multiplicative_expression_list()
     
     def multiplicative_expression_list(self):
-        if self._lookahead['lexeme'] == '*':
+        if self._current_token['lexeme'] == '*':
             self.match('*')
             return self.unary_expression()
-        elif self._lookahead['lexeme'] == '/':
+        elif self._current_token['lexeme'] == '/':
             self.match('/')
             return self.unary_expression()
         
@@ -648,26 +648,26 @@ class GoatParser:
         
             
     def parameter_value_list(self):
-        if self._lookahead['lexeme'] == ',':
+        if self._current_token['lexeme'] == ',':
             self.match(',')
             self.parameter()
             
     def class_block(self):
-        if self._lookahead['lexeme'] == 'class':
+        if self._current_token['lexeme'] == 'class':
             self.match('class')
             if self.ide():
                 self.class_extends()
-                if self._lookahead['lexeme'] == '{':
+                if self._current_token['lexeme'] == '{':
                     self.match('{')
                     if self.class_content():
-                        if self._lookahead['lexeme'] == '}':
+                        if self._current_token['lexeme'] == '}':
                             self.match('}')
                             self.class_block()
             else:
                 return False
                         
     def class_extends(self):
-        if self._lookahead['lexeme'] == 'extends':
+        if self._current_token['lexeme'] == 'extends':
             self.match('extends')
             if not self.ide():
                 return False
@@ -679,17 +679,17 @@ class GoatParser:
         
         
     def constructor(self):
-        if self._lookahead['lexeme'] == 'constructor':
+        if self._current_token['lexeme'] == 'constructor':
             self.match('constructor')
-            if self._lookahead['lexeme'] == '(':
+            if self._current_token['lexeme'] == '(':
                 self.match('(')
                 self.parameter()
-                if self._lookahead['lexeme'] == ')':
+                if self._current_token['lexeme'] == ')':
                     self.match(')')
-                    if self._lookahead['lexeme'] == '{':
+                    if self._current_token['lexeme'] == '{':
                         self.match('{')
                         self.assignment_method()
-                        if self._lookahead['lexeme'] == '}':
+                        if self._current_token['lexeme'] == '}':
                             self.match('}')
                             return True
                     else:
@@ -701,13 +701,13 @@ class GoatParser:
         return True
         
     def assignment_method(self):
-        if self._lookahead['lexeme'] == 'this':
+        if self._current_token['lexeme'] == 'this':
             self.match('this')
-            if self._lookahead['lexeme'] == '.':
+            if self._current_token['lexeme'] == '.':
                 self.match('.')
                 if self.ide():
                     self.optional_value()
-                    if self._lookahead['lexeme'] == ';':
+                    if self._current_token['lexeme'] == ';':
                         self.match(';')
                         self.assignment_method()
                         
@@ -721,10 +721,10 @@ class GoatParser:
         return False
     
     def additive_expression_list(self):
-        if self._lookahead['lexeme'] == '+':
+        if self._current_token['lexeme'] == '+':
             self.match('+')
             return self.multiplicative_expression()
-        elif self._lookahead['lexeme'] == '-':
+        elif self._current_token['lexeme'] == '-':
             self.match('-')
             return self.multiplicative_expression()
         
@@ -735,7 +735,7 @@ class GoatParser:
             return self.ide_lis_list()
         
     def ide_lis_list(self):
-        if self._lookahead['lexeme'] == ',':
+        if self._current_token['lexeme'] == ',':
             self.match(',')
             return self.ide_list()
         
@@ -749,11 +749,11 @@ class GoatParser:
     def assignment_expression(self):
         if self.type():
             if self.ide():
-                if self._lookahead['lexeme'] == '=':
+                if self._current_token['lexeme'] == '=':
                     self.match('=')
                     return self.logical_and_expression()
         elif self.ide():
-            if self._lookahead['lexeme'] == '=':
+            if self._current_token['lexeme'] == '=':
                 self.match('=')
                 return self.logical_and_expression()
                 
@@ -769,7 +769,7 @@ class GoatParser:
     
     def expression_sequence(self):
         if self.expression():
-            if self._lookahead['lexeme'] == ';':
+            if self._current_token['lexeme'] == ';':
                 self.match(';')
                 self.expression_sequence_list()
                 return True
@@ -784,40 +784,40 @@ class GoatParser:
     def assignment_expression(self):
         if self.type():
             if self.ide():
-                if self._lookahead['lexeme'] == '=':
+                if self._current_token['lexeme'] == '=':
                     self.match('=')
                     return self.logical_and_expression()
         elif self.ide():
-            if self._lookahead['lexeme'] == '=':
+            if self._current_token['lexeme'] == '=':
                 self.match('=')
                 return self.logical_and_expression()
             
         return False
     
     def print_command(self):
-        if self._lookahead['lexeme'] == 'print':
+        if self._current_token['lexeme'] == 'print':
             self.match('print')
-            if self._lookahead['lexeme'] == '(':
+            if self._current_token['lexeme'] == '(':
                 self.match('(')
                 if self.possible_value():
-                    if self._lookahead['lexeme'] == ')':
+                    if self._current_token['lexeme'] == ')':
                         self.match(')')
-                        if self._lookahead['lexeme'] == ';':
+                        if self._current_token['lexeme'] == ';':
                             self.match(';')
                             return True
                         
         return False
     
     def read_command(self):
-        if self._lookahead['lexeme'] == 'read':
+        if self._current_token['lexeme'] == 'read':
             self.match('read')
-            if self._lookahead['lexeme'] == '(':
+            if self._current_token['lexeme'] == '(':
                 self.match('(')
                 if self.ide():
                     if self.object_value():
-                        if self._lookahead['lexeme'] == ')':
+                        if self._current_token['lexeme'] == ')':
                             self.match(')')
-                            if self._lookahead['lexeme'] == ';':
+                            if self._current_token['lexeme'] == ';':
                                 self.match(';')
                                 return True
                             
@@ -832,44 +832,44 @@ class GoatParser:
         return False
     
     def methods(self):
-        if self._lookahead['lexeme'] == 'methods':
+        if self._current_token['lexeme'] == 'methods':
             self.match('methods')
-            if self._lookahead['lexeme'] == '{':
+            if self._current_token['lexeme'] == '{':
                 self.match('{')
                 self.method()
-                if self._lookahead['lexeme'] == '}':
+                if self._current_token['lexeme'] == '}':
                     self.match('}')
                     
                     
     def method(self):
         if self.type():
             if self.ide():
-                if self._lookahead['lexeme'] == '(':
+                if self._current_token['lexeme'] == '(':
                     self.match('(')
                     self.parameter()
-                    if self._lookahead['lexeme'] == ')':
+                    if self._current_token['lexeme'] == ')':
                         self.match(')')
-                        if self._lookahead['lexeme'] == '{':
+                        if self._current_token['lexeme'] == '{':
                             self.match('{')
                             self.statement_sequence()
-                            if self._lookahead['lexeme'] == 'return':
+                            if self._current_token['lexeme'] == 'return':
                                 self.match('return')
                                 if self.value():
-                                    if self._lookahead['lexeme'] == ';':
+                                    if self._current_token['lexeme'] == ';':
                                         self.match(';')
-                                        if self._lookahead['lexeme'] == '}':
+                                        if self._current_token['lexeme'] == '}':
                                             self.match('}')
                                             self.method()
-        elif self._lookahead['lexeme'] == 'void':
+        elif self._current_token['lexeme'] == 'void':
             if self.ide():
-                if self._lookahead['lexeme'] == '(':
+                if self._current_token['lexeme'] == '(':
                     self.match('(')
                     self.parameter()
-                    if self._lookahead['lexeme'] == ')':
+                    if self._current_token['lexeme'] == ')':
                         self.match(')')
-                        if self._lookahead['lexeme'] == '{':
+                        if self._current_token['lexeme'] == '{':
                             self.match('{')
                             self.statement_sequence()
-                            if self._lookahead['lexeme'] == '}':
+                            if self._current_token['lexeme'] == '}':
                                 self.match('}')
                                 self.method()
