@@ -20,6 +20,18 @@ class GoatParser:
         self._output = open(f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
         
     def program(self):
+        if self._current_token['lexeme'] == 'const':
+            self.constant_block()
+            if self._current_token['lexeme'] == 'variables':
+                self.variable_block()
+                if self._current_token['lexeme'] == 'class':
+                    self.class_block()
+                    if self._current_token['lexeme'] == 'objects':
+                        self.object_block()
+                        if self._current_token['lexeme'] == 'class':
+                            self.main_class()
+            
+        
         ans = self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
         if not ans:
             self.error()
