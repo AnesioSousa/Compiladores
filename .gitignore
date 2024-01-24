@@ -1,4 +1,5 @@
 saida.txt
 files/*
 .vscode
-/misc/
+.venv/
+/resources/

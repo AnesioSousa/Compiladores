@@ -37,12 +37,11 @@ class GoatParser:
                         self.object_block()
                         if self._current_token['lexeme'] == 'class':
                             self.main_class()
-            
-        
-        ans = self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
-        if not ans:
-            self.error()
-        return ans
+        #ans = self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
+        #if not ans:
+        #    self.error()
+        #return ans
+        return True
    
     def error(self):
         sync_tokens = [';']
@@ -88,28 +87,32 @@ class GoatParser:
         self.match('variables')
         if self._current_token['lexeme'] == '{':
             self.match('{')
-            self.variable()
-            if self._current_token['lexeme'] == '}':
+            if self.variable():
                 self.match('}')
-            print("Variables read successfully")
+                print("Variables read successfully")
 
     def variable(self):
-        ans=False
+        if self._current_token['lexeme'] == '}':
+            return True
+        
         if self.type():
             if self.ide():
-                if self.optional_value() and self.variable_same_line():
-                    if self._current_token['lexeme'] == ';':
-                        return self.variable()
+                self.optional_value()
+                self.variable_same_line()
+                if self._current_token['lexeme'] == ';':
+                    self.match(';')
+                    return self.variable()
+                
+        """
         elif self.ide():
             if self.for_init():
                 if self._current_token['lexeme'] == ';':
                     self.match(';')
                     ans = True
+        """
         
-        if ans:
-            
-            print("Variable read successfully")
-        return ans
+        
+
     
     def for_init(self):
         if self._current_token['lexeme'] == '=':
@@ -259,13 +262,20 @@ class GoatParser:
             return self.array()
                 
         return False  # ERRO
+    
 
     def array(self):
         if self._current_token['lexeme'] == '[':
             self.match('[')
-            if self.array_value() and self.more_array_value():
+            if self._current_token['lexeme'] == '[':
+                return self.array()
+            self.array_value()
+            if self.more_array_value():
                 if self._current_token['lexeme'] == ']':
                     self.match(']')
+                    return True
+                elif self._current_token['lexeme'] == ',':
+                    self.match(',')
                     return True
             return True
             

@@ -21,7 +21,7 @@ def main():
 
 def main():
     myLexer = LexicalAnalyser()
-    tokens = myLexer.scanner('./files/inputs/new_test.txt')
+    tokens = myLexer.scanner('./files/other_input.txt')
 
     myParser = GoatParser(input_tokens=tokens)
 
