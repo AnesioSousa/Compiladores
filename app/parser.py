@@ -13,17 +13,17 @@ class GoatParser:
     """
 
     """
-    def __init__(self, file_name, input_tokens=[]):
+    def __init__(self, file_name, input_sequence=[]):
         self._file_name = file_name
-        self._input_tokens = input_tokens
-        self._lookahead = self._input_tokens[0]
+        self._input_sequence = input_sequence
+        self._lookahead = self._input_sequence[0]
         self._token_counter = 0
         self._output = open(f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
     """
     
-    def __init__(self,input_tokens):
-        self._input_tokens = input_tokens
-        self._lookahead = self._input_tokens[0]
+    def __init__(self,input_sequence):
+        self._input_sequence = input_sequence
+        self._lookahead = self._input_sequence[0]
         self._token_counter = 0
         
     def program(self):
@@ -37,10 +37,6 @@ class GoatParser:
                         self.object_block()
                         if self._lookahead['lexeme'] == 'class':
                             self.main_class()
-        #ans = self.constant_block() and self.variable_block() and self.class_block() and self.object_block() and self.main_class()
-        #if not ans:
-        #    self.error()
-        #return ans
         return True
    
     def error(self):
@@ -49,70 +45,80 @@ class GoatParser:
 
         while(self._lookahead['lexeme'] not in sync_tokens):
             self._lookahead = self.next_token()
-            if(self._token_counter == len(self._input_tokens)-1):
+            if(self._token_counter == len(self._input_sequence)-1):
                 break
         self._lookahead = self.next_token()
 
-    def a(self):
-        ans = False
-        if self._lookahead['lexeme'] == 'variables':
-            self.match('variables')
-            ans = self.variable_block() and self.c()
-            
-        return ans
-    
-    def b(self):
-        ans = True
-        if self._lookahead['lexeme'] == 'const':
-            self.match('const')
-            ans = self.constant_block() and self.c()
-        
-        return ans
-        
-    def c(self):
-        ans = False
-        if self._lookahead['lexeme'] == 'objects':
-            self.match('objects')
-            ans = self.objects()
-        elif self._lookahead['lexeme'] == 'class':
-            self.match('class')
-            if self._lookahead['lexeme'] == 'main':
-                self.match('main')
-                ans = self.main()
-            elif self.class_block():
-                ans = self.c()
-        return ans
-    
     def variable_block(self):
         self.match('variables')
         if self._lookahead['lexeme'] == '{':
             self.match('{')
-            if self.variable():
+            self.variable()
+            if self._lookahead['lexeme'] == '}':
                 self.match('}')
-                print("Variables read successfully")
-
+            else:
+                return False
+            
+        print("Variables read successfully")
+    
+    def number_list(self):
+        if self._lookahead['token_type'] == 'NRO':
+            self.match(self._lookahead['lexeme'])
+            if self._lookahead['lexeme'] == ',':
+                self.match(',')
+                self.number_list()
+        else:
+            self.error()
+    
+    def tre(self):
+        if self._lookahead['lexeme'] == '[':
+            self.match('[')
+            self.number_list()
+            if self._lookahead['lexeme'] == ']':
+                self.match(']')
+                if self._lookahead['lexeme'] == ',':
+                    self.match(',')
+                    self.tre()
+        
+    
     def variable(self):
-        if self._lookahead['lexeme'] == '}':
-            return True
-        
-        if self.type():
+        if self._lookahead['lexeme'] in ['int', 'real', 'string']:
+            self.match(self._lookahead['lexeme'])
+            self.dimension()
             if self.ide():
+                if self._lookahead['lexeme'] == '=':
+                    self.match('=')
+                    if self._lookahead['token_type'] in ['NRO', 'CAC', 'IDE']:
+                        self.assignment_value()
+                        
+                    #Será que eu to limitando a abertura só de até duas chaves '[['?
+                    elif self._lookahead['lexeme'] == '[':
+                        self.match('[')
+                        if self._lookahead['lexeme'] == '[':
+                            self.tre()
+                        else:
+                            self.number_list()
+                            
+                        if self._lookahead['lexeme'] == ']':
+                            self.match(']')
+                        else:
+                            return self.error()
+                    else:
+                        return self.error()
+            else:
+                return self.error()
+            
+        elif self._lookahead['lexeme'] == 'string' or self._lookahead['lexeme'] == 'boolean':               
+            if self.ide():
+                #OPTIONAL VALUE TAMBÉM DEIXA ATRIBUIR ARRAYS PARA VARIAVEIS DOS TIPOS STRING E BOOLEAN!
                 self.optional_value()
-                self.variable_same_line()
-                if self._lookahead['lexeme'] == ';':
-                    self.match(';')
-                    return self.variable()
                 
-        """
-        elif self.ide():
-            if self.for_init():
-                if self._lookahead['lexeme'] == ';':
-                    self.match(';')
-                    ans = True
-        """
-        
-        
-
+        self.variable_same_line()
+        if self._lookahead['lexeme'] == ';':
+            self.match(';')
+            self.variable()
+        else:
+            self.error()
     
     def for_init(self):
         if self._lookahead['lexeme'] == '=':
@@ -139,8 +145,10 @@ class GoatParser:
     
     def variable_same_line(self):
         if self._lookahead['lexeme'] == ',':
-            if self.ide():
-                return self.optional_value() and self.variable_same_line()
+            self.match(',')
+            self.ide()
+            self.optional_value()
+            self.variable_same_line()
 
     def optional_value(self):
         if self._lookahead['lexeme'] == '=':
@@ -171,9 +179,9 @@ class GoatParser:
             return False
 
     def next_token(self):
-        if (self._token_counter < len(self._input_tokens)-1):
+        if (self._token_counter < len(self._input_sequence)-1):
             self._token_counter += 1
-        return self._input_tokens[self._token_counter]
+        return self._input_sequence[self._token_counter]
 
     def constant_block(self):
         self.match('const')
@@ -214,7 +222,7 @@ class GoatParser:
             return True
         elif self.array():
             return True
-
+        
         return False
     
     def constant_same_line(self):
@@ -239,7 +247,7 @@ class GoatParser:
         if self._lookahead['lexeme'] in ['int','string', 'boolean', 'real']:
             self.A()
             if self._lookahead['lexeme'] in ['[']:
-                return self.B()
+                self.dimension()
             
             return True
             
@@ -257,37 +265,87 @@ class GoatParser:
         else:
             return False  # ERRO
         
-    def B(self):
+    def dimension(self):
         if self._lookahead['lexeme'] in ['[']:
-            return self.array()
-                
-        return False  # ERRO
-    
+            self.match('[')
+            #Tá permitindo float na inicialização?
+            self.number()
+            if self._lookahead['lexeme'] in [']']:
+                self.match(']')
+                self.dimension()
+    """
+    def rec(self):
+        self.number()
+        if self._lookahead['lexeme'] == ',':
+            self.match(',')
+            self.rec()
 
     def array(self):
         if self._lookahead['lexeme'] == '[':
             self.match('[')
             if self._lookahead['lexeme'] == '[':
-                return self.array()
-            self.array_value()
-            if self.more_array_value():
-                if self._lookahead['lexeme'] == ']':
-                    self.match(']')
-                    return True
-                elif self._lookahead['lexeme'] == ',':
+                self.match('[')
+                self.array()
+        elif self._lookahead['token_type'] == 'NRO':
+            self.rec()
+            if self._lookahead['lexeme'] == ']':
+                self.match(']')
+                if self._lookahead['lexeme'] == ',':
                     self.match(',')
-                    return True
+                    self.array()
+            if self._lookahead['lexeme'] == '[':
+                self.array()
+            
+                
+                    self.number()
+                else:
+                    return False
+            self.array_value()
+            self.more_array_value()
+            
+            if self._lookahead['lexeme'] == ']':
+                self.match(']')
+                
             return True
             
+            ####################################################
+            
+                return True
+            elif self._lookahead['lexeme'] == ',':
+                self.match(',')
+                return True
+            ####################################################
         return False
-   
-    def more_array_value(self):
+    """
+    
+    """
+    #Array method
+    
+    def array(self):
+        if self._lookahead['lexeme'] == '[':
+            self.match('[')
+            self.array_value()
+            self.more_array_value()
+            if self._lookahead['lexeme'] == ']':
+                self.match(']')
+    """
+    def array(self):
+        if self._lookahead['lexeme'] == '[':
+            self.match('[')
+            self.array_value()
+            #self.more_array_value()
+    
+    
+    def more_array_value(self, sequence=None):
         if self._lookahead['lexeme'] == ',':
             self.match(',')
-            if self.array_value() and self.more_array_value():
-                    return True
-        return True
-    
+            if self._lookahead['token_type'] in ['NRO']:
+                self.number()
+                self.more_array_value()
+            elif self._lookahead['lexeme'] in ['[']:
+                self.array()
+
+    """
     def array_value(self):
         if self.possible_value():
             if self._lookahead['lexeme'] == ']':
@@ -300,6 +358,11 @@ class GoatParser:
             return True
 
         return False
+    
+    """
+    def array_value(self):
+        self.possible_value()
+        self.more_array_value()
 
     def object_value(self):
         if self._lookahead['lexeme'] == '.':
@@ -326,14 +389,31 @@ class GoatParser:
             return True
 
         return False
-
+    """
+    possible_value BACKUP
+    
     def possible_value(self):
+        if
+        
         if self.ide():
             return self.object_value()
         elif self.value():
             return True
 
-        return True
+        return False
+    """
+    
+    
+    def possible_value(self):
+        if self.ide():
+            return self.object_value()
+        # lembrar do porém da token ser boolean acima!
+        elif self._lookahead['token_type'] in ['NRO', 'CAC', 'IDE']:
+            self.value()
+        elif self._lookahead['lexeme'] == '[':
+            self.array()
+            self.more_array_value()
+            self.match(']')
     
     def main_class(self):
         self.match('class')

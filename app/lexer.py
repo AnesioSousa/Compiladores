@@ -136,13 +136,13 @@ class LexicalAnalyser:
         """
 
 
-    def scanner(self, path_to_input_file: str) -> list:
+    def scanner(self, path='') -> list:
         """
         Method responsible for scanning a input file and returning a txt file containing a token sequence
         
-        :param path_to_input_file: URL path to input file
+        :param path: URL path to input file
         """
-        input = open(path_to_input_file, 'r')
+        input = open(path, 'r')
         lines = input.readlines()
 
         filtered_mod_lines = []
