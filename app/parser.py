@@ -92,17 +92,8 @@ class GoatParser:
                         self.assignment_value()
                         
                     #Será que eu to limitando a abertura só de até duas chaves '[['?
-                    elif self._lookahead['lexeme'] == '[':
-                        self.match('[')
-                        if self._lookahead['lexeme'] == '[':
-                            self.tre()
-                        else:
-                            self.number_list()
-                            
-                        if self._lookahead['lexeme'] == ']':
-                            self.match(']')
-                        else:
-                            return self.error()
+                    elif self._lookahead['lexeme'] == '[': 
+                        self.array()
                     else:
                         return self.error()
             else:
@@ -168,7 +159,8 @@ class GoatParser:
             self.object_value()
         elif self.value():
             return True
-        elif self.array():
+        elif self._lookahead['lexeme'] == '[':
+            self.array()
             return True
         
         return False
@@ -218,13 +210,15 @@ class GoatParser:
 
     def assignment_value(self):
         if self.ide():
-            if self.object_value():
+            if self._lookahead['lexeme'] == '.':
+                self.object_value()
                 return True
             elif self.access_expression():
                 return True
         elif self.value():
             return True
-        elif self.array():
+        elif self._lookahead['lexeme'] == '[':
+            self.array()
             return True
         
         return False
@@ -338,34 +332,16 @@ class GoatParser:
     def array(self):
         if self._lookahead['lexeme'] == '[':
             self.match('[')
-            self.array_value()
-            #self.more_array_value()
-    
-    
-    def more_array_value(self, sequence=None):
-        if self._lookahead['lexeme'] == ',':
-            self.match(',')
-            if self._lookahead['token_type'] in ['NRO']:
-                self.number()
-                self.more_array_value()
-            elif self._lookahead['lexeme'] in ['[']:
-                self.array()
-
-    """
-    def array_value(self):
-        if self.possible_value():
+            if self._lookahead['lexeme'] == '[':
+                self.tre()
+            else:
+                self.number_list()
+                
             if self._lookahead['lexeme'] == ']':
                 self.match(']')
-                return True
-            elif self._lookahead['lexeme'] == ',':
-                self.match(',')
-                return self.possible_value()
-        elif self.array():
-            return True
-
-        return False
+            else:
+                return self.error()
     
-    """
     def array_value(self):
         self.possible_value()
         self.more_array_value()
@@ -373,9 +349,7 @@ class GoatParser:
     def object_value(self):
         if self._lookahead['lexeme'] == '.':
             self.match('.')
-            return self.ide()
-
-        return True
+            self.ide()
 
     def value(self):
         if self._lookahead['token_type'] == 'NRO':
@@ -395,20 +369,7 @@ class GoatParser:
             return True
 
         return False
-    """
-    possible_value BACKUP
-    
-    def possible_value(self):
-        if
-        
-        if self.ide():
-            return self.object_value()
-        elif self.value():
-            return True
 
-        return False
-    """
-    
     
     def possible_value(self):
         if self.ide():
@@ -709,8 +670,9 @@ class GoatParser:
         return False
     
     def args_list(self):
-        if self.assignment_value() and self.assignment_value_list():
-            return True
+        self.assignment_value()
+        self.assignment_value_list()
+        return True
     
     def assignment_value_list(self):
         if self._lookahead['lexeme'] == ',':
