@@ -107,19 +107,23 @@ class GoatParser:
                         return self.error()
             else:
                 return self.error()
-            
-        elif self._lookahead['lexeme'] == 'string' or self._lookahead['lexeme'] == 'boolean':               
+            self.variable_end()
+        elif self._lookahead['lexeme'] == 'boolean':
+            self.match(self._lookahead['lexeme'])            
             if self.ide():
                 #OPTIONAL VALUE TAMBÉM DEIXA ATRIBUIR ARRAYS PARA VARIAVEIS DOS TIPOS STRING E BOOLEAN!
                 self.optional_value()
+                self.variable_end()
                 
+        
+    def variable_end(self):
         self.variable_same_line()
         if self._lookahead['lexeme'] == ';':
             self.match(';')
             self.variable()
         else:
             self.error()
-    
+        
     def for_init(self):
         if self._lookahead['lexeme'] == '=':
             self.match('=')
@@ -767,11 +771,11 @@ class GoatParser:
             self.class_extends()
             if self._lookahead['lexeme'] == '{':
                 self.match('{')
-                if self.class_content():
-                    if self._lookahead['lexeme'] == '}':
-                        self.match('}')
-                        self.class_block()
-            print("Class block was read successfully")
+                self.class_content()
+                if self._lookahead['lexeme'] == '}':
+                    self.match('}')
+                    self.class_block()
+                    print("Class block was read successfully")
         else:
             return False
                         
@@ -784,8 +788,9 @@ class GoatParser:
         return True
     
     def class_content(self):
-        return self.variable_block() and self.constructor() and self.methods()
-        
+        self.variable_block()
+        self.constructor()
+        self.methods()
         
     def constructor(self):
         if self._lookahead['lexeme'] == 'constructor':
