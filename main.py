@@ -19,16 +19,18 @@ def main():
             print("Falha")
 """
 
+
 def main():
     myLexer = LexicalAnalyser()
     ctrlParser = ControllerParser()
-    
+
     token_sequence = myLexer.scanner(path='./files/other_input.txt')
     myParser = ctrlParser.make_parser(token_sequence)
-    
+
     if myParser.program():
         print("Sucesso")
     else:
         print("Falha")
-             
+
+
 main()
