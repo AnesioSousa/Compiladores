@@ -1,6 +1,5 @@
 from app.lexer import LexicalAnalyser
-from app.controllerParser import ControllerParser
-import os
+from app.parser import GoatParser
 
 """
 def main():
@@ -22,10 +21,10 @@ def main():
 
 def main():
     myLexer = LexicalAnalyser()
-    ctrlParser = ControllerParser()
+
 
     token_sequence = myLexer.scanner(path='./files/other_input.txt')
-    myParser = ctrlParser.make_parser(token_sequence)
+    myParser = GoatParser(token_sequence)
 
     if myParser.program():
         print("Sucesso")

@@ -894,10 +894,10 @@ if __name__ == '__main__':
         {'lexeme': '}', 'token_type': 'DEL', 'number_line': 3},
     ]
 
-parser = GoatParser(input_sequence)
-result = parser.program()
+    parser = GoatParser(input_sequence)
+    result = parser.program()
 
-if result:
-    print("Análise sintática concluída com sucesso!")
-else:
-    print("Erro na análise sintática.")
+    if result:
+        print("Análise sintática concluída com sucesso!")
+    else:
+        print("Erro na análise sintática.")
