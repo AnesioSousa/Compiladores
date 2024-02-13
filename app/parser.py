@@ -4,7 +4,7 @@ EXA869 - MI - PROCESSADORES DE LINGUAGEM DE PROGRAMAÇÃO - TP02 - 2023.2
 Autor: Anésio Neto 
 Docente: Matheus Pires
 """
-
+import json
 
 class GoatParser:
     """
@@ -25,6 +25,24 @@ class GoatParser:
         self._input_sequence = input_sequence
         self._lookahead = self._input_sequence[0]
         self._token_counter = 0
+        
+        # Semântico
+        self.symbol_table = []
+        self.current_scope = "GLOBAL"
+        self.last_ide = None
+        self.last_type = None
+        self.last_number = {
+            "number": None,
+            "type": None
+        }
+        self.function_parameters = []
+        # expected symbol for type comparison
+        self.expected = None
+        self.tag_retorno = {'status':False, 'type':'vazio'}
+        #self.output = open(output_file, 'a', encoding='utf-8')
+        self.semanticStatus = True
+        with open('semantic_errors.json', 'r', encoding='utf-8') as f:
+            self.msg_error = json.load(f)
 
     def program(self):
         if self._lookahead['lexeme'] == 'const':
@@ -156,6 +174,9 @@ class GoatParser:
             return False
 
     def assignment_value(self):
+        symbol = self.get_symbol(self.last_ide)
+        self.expected = symbol
+        typeOperation = ( 0 if symbol is None else 1)
         if self.ide():
             self.object_value()
         elif self.value():
@@ -195,6 +216,7 @@ class GoatParser:
     def constant(self):
         if self.type():
             if self.ide():
+                self.save_symbol(category="CONST")
                 if self._lookahead['lexeme'] == '=':
                     self.match('=')
                     if self.assignment_value() and self.constant_same_line():
@@ -225,6 +247,7 @@ class GoatParser:
         if self._lookahead['lexeme'] == ',':
             self.match(',')
             if self.ide():
+                self.save_symbol(category="CONST")
                 if self._lookahead['lexeme'] == '=':
                     self.match('=')
                     return self.assignment_value() and self.constant_same_line()
@@ -235,6 +258,7 @@ class GoatParser:
 
     def ide(self):
         if self._lookahead['token_type'] == 'IDE':
+            self.last_ide = self._lookahead['lexeme']
             self.match(self._lookahead['lexeme'])
             return True
         return False
@@ -251,12 +275,16 @@ class GoatParser:
 
     def A(self):
         if self._lookahead['lexeme'] == 'int':
+            self.last_type = 'int'
             self.match('int')
         elif self._lookahead['lexeme'] == 'string':
+            self.last_type = 'string'
             self.match('string')
         elif self._lookahead['lexeme'] == 'boolean':
+            self.last_type = 'boolean'
             self.match('boolean')
         elif self._lookahead['lexeme'] == 'real':
+            self.last_type = 'real'
             self.match('real')
         elif self._lookahead['lexeme'] == 'void':
             self.match('void')
@@ -294,7 +322,18 @@ class GoatParser:
             self.match('.')
             self.ide()
 
-    def value(self):
+    def value(self, type=None, symbol=None):
+        """
+        Function for check a value
+
+        Parameters:
+            type (int): Type of operation
+                * 0 -> attribution of undeclared variable
+                * 1 -> attribution
+                * 2 -> function parameter
+            symbol (dict): Symbol under validation (used for attribution)
+        """
+        
         if self._lookahead['token_type'] == 'NRO':
             return self.number()
         elif self._lookahead['token_type'] == 'CAC':
@@ -884,6 +923,146 @@ class GoatParser:
                             elif self._lookahead['lexeme'] == '}':
                                 self.match('}')
                             self.method()
+                            
+                            
+                            
+##################################################################################################
+##################################################################################################
+# SEMANTICOOOOO
+    def save_symbol(self, category):
+        symbol = { 
+            "lexeme": self.last_ide, 
+            "category": category,
+            "type": self.last_type,
+            "scope": self.current_scope,
+            "parameters": self.function_parameters
+        }
+        id = 1
+        for symb in self.symbol_table:
+            if symbol['category'] == 'FUNCAO' and symbol['lexeme'] == symb['lexeme']:
+                if symbol['parameters'] != symb['parameters']:
+                    id = id + 1
+                else: 
+                    print("not saved: ", symbol, symb)
+                    self.semanticError(symb)
+                    return
+            elif symbol['lexeme'] == symb['lexeme']:
+                self.semanticError(symb)
+                return
+        if symbol['category'] == 'FUNCAO': symbol['scope'] = self.current_scope = symbol['scope']+f" {id}"
+        self.symbol_table.append(symbol)
+
+    def remove_symbol(self, scope):
+        for symbol in self.symbol_table:
+            if symbol['scope'] == scope and symbol['category'] != 'FUNCAO':
+                self.symbol_table.remove(symbol)
+
+    def get_symbol(self, lexeme: str) -> dict:
+        for symbol in self.symbol_table:
+            if symbol['lexeme'] == lexeme:
+                return symbol
+            elif symbol['category'] == 'FUNCAO':
+                for param in symbol['parameters']:
+                    if param['lexeme'] == lexeme:
+                        return {'lexeme':param['lexeme'],'category':'VAR','type':param['type'],'scope':symbol['scope']}
+        return None
+    
+    def get_functions(self, lexeme: str) -> list:
+        symbols = []
+        for symbol in self.symbol_table:
+            if symbol['lexeme'] == lexeme and symbol['category'] == 'FUNCAO':
+                symbols.append(symbol)
+        return symbols
+    
+    def get_symbol_by_scope(self, scope: str) -> dict:
+        """
+        Returns the symbol of the function with given scope.
+        Note: the scope is unique
+        """
+        for symbol in self.symbol_table:
+            if symbol['scope'] == scope and symbol['category'] == 'FUNCAO':
+                return symbol
+        return None
+
+    def is_integer(self, number: str) -> bool:
+        x = self.lookahead['lexeme'].find(".")
+        if(x >= 0):
+            return False
+        return True
+    
+    def semanticError(self, symbol=None, type=1):
+        if symbol:
+            print(f"Semantic Error:  {symbol['category']} '{symbol['lexeme']}' " + self.msg_error[type-1] + f" - number line: {self._lookahead['number_line']}\n") 
+        else:
+            print(f"Semantic Error:  " + self.msg_error[type-1] + f" - number line: {self._lookahead['number_line']}\n") 
+        self.semanticStatus = False
+        
+    def attributionTypeError(self, symbol: dict, receivedType: str = None) -> None:
+        if(symbol["type"] == "inteiro"):
+            self.semanticError(symbol, 3)
+        elif(symbol["type"] == "real"):
+            self.semanticError(symbol, 5)
+        elif(symbol["type"] == "cadeia"):
+            self.semanticError(symbol, 6)
+        elif(symbol["type"] == "char"):
+            self.semanticError(symbol, 7)
+        elif(symbol["type"] == "booleano"):
+            self.semanticError(symbol, 8)
+            
+    def check_parameter(self, symbol: dict, receivedType: str = None):
+        if symbol:
+            if symbol["paran_current"] >= len(symbol["parameters"]):
+                self.semanticError(symbol, 17)
+            else:
+                if ((type == "real" and receivedType not in ["inteiro", "real"]) or
+                    (type != "real" and type != receivedType)):
+                    self.semanticError(symbol, 16)
+            symbol["paran_current"] += 1
+            
+    def check_ide_as_integer(self):
+        symbol = self.get_symbol(self.last_ide)
+        if symbol != None and symbol['type'] != 'inteiro':
+            self.semanticError(symbol, type=3)
+            
+    def follow_condicional(self):
+        follow = self.follow()
+        i=1
+        rel_log = False
+        while follow['lexeme'] not in [')','{','}']:
+            follow = self.follow(i)      
+            if follow['type'] in ['REL','LOG']:
+                rel_log=True
+                break
+            i += 1
+            if self.i+i >= len(self.input): break
+        return rel_log
+    
+    def follow_exp(self):
+        follow = self.follow()       
+        i=1
+        rel_log = art = False
+        while follow['lexeme'] not in [';',',',')','}']:
+            follow = self.follow(i)      
+            if follow['type'] in ['REL','LOG']:
+                rel_log=True
+            elif follow['type'] == 'ART':
+                art=True 
+            i += 1
+            if self.i+i >= len(self.input): break
+        return rel_log, art
+    
+    def chamadafuncao(self, symbol = None):
+        if symbol:
+            symbol["paran_current"] = 0
+        else:
+            self.semanticError({'lexeme': self.last_ide, 'category': 'FUNCAO'}, type=4)
+        if self.lookahead['lexeme'] == '(':
+            self.match('(')
+            return self.paran(symbol)
+        return False
+    
+    def follow(self, k=1):
+        return self.input[self.i+k]
 
 
 if __name__ == '__main__':
