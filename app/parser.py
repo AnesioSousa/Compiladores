@@ -707,6 +707,7 @@ class GoatParser:
     # Tirei o "if self.type():" antes do "if self.ide():"
     def parameter(self):
         if self.ide():
+            self.function_parameters.append({"lexeme":self.last_ide, "type": self.last_type})
             self.parameter_value_list()
 
         return True
@@ -719,14 +720,17 @@ class GoatParser:
     def class_block(self):
         if self._lookahead['lexeme'] == 'class':
             self.match('class')
-            if self.ide():
+            
+            if self._lookahead['token_type'] == 'IDE': 
                 self.last_ide = self._lookahead['lexeme']
-                self.last_type = self._lookahead['token_type']
+                self.save_symbol('CLASS')
+                self.current_scope = "CLASS_"+self.last_ide
+                self.ide()
+                #self.last_type = self._lookahead['token_type']
+                #Tem que checar pra quando tiver um extendss!
                 self.class_extends()
                 if self._lookahead['lexeme'] == '{':
                     self.match('{')
-                    self.save_symbol('CLASS')
-                    self.current_scope = self.current_scope + " " + self.last_ide
                     self.class_content()
                     if self._lookahead['lexeme'] == '}':
                         self.match('}')
@@ -915,7 +919,12 @@ class GoatParser:
             if self.ide():
                 if self._lookahead['lexeme'] == '(':
                     self.match('(')
+                    self.current_scope = "FUNC_"+self.last_ide
+                    function = [self.last_ide, self.last_type]
                     self.parameter()
+                    self.last_ide = function[0]
+                    self.last_type = function[1]
+                    self.save_symbol('FUNCAO')
                     if self._lookahead['lexeme'] == ')':
                         self.match(')')
                         if self._lookahead['lexeme'] == '{':
@@ -943,7 +952,7 @@ class GoatParser:
             "category": category,
             "type": self.last_type,
             "scope": self.current_scope,
-            "parameters": self.function_parameters
+            #"parameters": self.function_parameters
         }
         id = 1
         for symb in self.symbol_table:
@@ -955,9 +964,11 @@ class GoatParser:
                     self.semanticError(symb)
                     return
             elif symbol['lexeme'] == symb['lexeme']:
-                self.semanticError(symb)
-                return
-        if symbol['category'] == 'FUNCAO': symbol['scope'] = self.current_scope = symbol['scope']+f" {id}"
+                if symbol['scope'] == symb['scope']:
+                    self.semanticError(symb)
+                    return
+        if symbol['category'] == 'FUNCAO':
+            symbol['scope'] = self.current_scope = symbol['scope']+f" {id}"
         self.symbol_table.append(symbol)
 
     def remove_symbol(self, scope):
