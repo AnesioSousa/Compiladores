@@ -103,6 +103,7 @@ class GoatParser:
             self.match(self._lookahead['lexeme'])
             self.dimension()
             if self.ide():
+                self.save_symbol(category="VAR")
                 if self._lookahead['lexeme'] == '=':
                     self.match('=')
                     if self._lookahead['token_type'] in ['NRO', 'CAC', 'IDE']:
@@ -120,6 +121,7 @@ class GoatParser:
             self.match(self._lookahead['lexeme'])
             if self.ide():
                 # OPTIONAL VALUE TAMBÉM DEIXA ATRIBUIR ARRAYS PARA VARIAVEIS DOS TIPOS STRING E BOOLEAN!
+                self.save_symbol(category="VAR")
                 self.optional_value()
                 self.variable_end()
 
@@ -156,11 +158,10 @@ class GoatParser:
         return False
 
     def variable_same_line(self):
-        #Cade o match?
-        #Cade o match?
         if self._lookahead['lexeme'] == ',':
             self.match(',')
             self.ide()
+            self.save_symbol(category="VAR")
             self.optional_value()
             self.variable_same_line()
 
@@ -168,7 +169,6 @@ class GoatParser:
         if self._lookahead['lexeme'] == '=':
             self.match('=')
             self.assignment_value()
-            return True
             return True
         else:
             return False
