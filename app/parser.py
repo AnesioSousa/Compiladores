@@ -594,6 +594,7 @@ class GoatParser:
     def for_statement(self):
         if self._lookahead['lexeme'] == 'for':
             self.match('for')
+            self.current_scope = 'FOR'
             if self._lookahead['lexeme'] == '(':
                 self.match('(')
                 self.variable()
@@ -608,6 +609,7 @@ class GoatParser:
                                 self.statement_sequence()
                                 if self._lookahead['lexeme'] == '}':
                                     self.match('}')
+                                    self.remove_symbol(self.current_scope)
                                     return True
         return False
 
@@ -919,12 +921,12 @@ class GoatParser:
             if self.ide():
                 if self._lookahead['lexeme'] == '(':
                     self.match('(')
-                    self.current_scope = "FUNC_"+self.last_ide
+                    #self.current_scope = "FUNC_"+self.last_ide
                     function = [self.last_ide, self.last_type]
                     self.parameter()
                     self.last_ide = function[0]
                     self.last_type = function[1]
-                    self.save_symbol('FUNCAO')
+                    self.save_symbol('METHOD')
                     if self._lookahead['lexeme'] == ')':
                         self.match(')')
                         if self._lookahead['lexeme'] == '{':
@@ -973,7 +975,7 @@ class GoatParser:
 
     def remove_symbol(self, scope):
         for symbol in self.symbol_table:
-            if symbol['scope'] == scope and symbol['category'] != 'FUNCAO':
+            if symbol['scope'] == scope and symbol['category'] != 'METHOD':
                 self.symbol_table.remove(symbol)
 
     def get_symbol(self, lexeme: str) -> dict:
@@ -1011,7 +1013,7 @@ class GoatParser:
     
     def semanticError(self, symbol=None, type=1):
         if symbol:
-            print(f"Semantic Error:  {symbol['category']} '{symbol['lexeme']}' " + self.msg_error[type-1] + f" - number line: {self._lookahead['number_line']}\n") 
+            print(f"Semantic Error:  {symbol['category']} '{symbol['lexeme']}' " + self.msg_error[type-1] + f" - number line: {self._lookahead['number_line']} - scope: {symbol['scope']}\n") 
         else:
             print(f"Semantic Error:  " + self.msg_error[type-1] + f" - number line: {self._lookahead['number_line']}\n") 
         self.semanticStatus = False
