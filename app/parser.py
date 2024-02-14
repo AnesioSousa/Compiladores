@@ -720,9 +720,13 @@ class GoatParser:
         if self._lookahead['lexeme'] == 'class':
             self.match('class')
             if self.ide():
+                self.last_ide = self._lookahead['lexeme']
+                self.last_type = self._lookahead['token_type']
                 self.class_extends()
                 if self._lookahead['lexeme'] == '{':
                     self.match('{')
+                    self.save_symbol('CLASS')
+                    self.current_scope = self.current_scope + " " + self.last_ide
                     self.class_content()
                     if self._lookahead['lexeme'] == '}':
                         self.match('}')
@@ -738,7 +742,11 @@ class GoatParser:
         return True
 
     def class_content(self):
-        self.variable_block()
+        if self._lookahead['lexeme'] == 'variables':
+            self.variable_block()
+        else:
+            symb = self.get_symbol(self.last_ide)
+            self.semanticError(symb, type=2)
         self.constructor()
         self.methods()
 
