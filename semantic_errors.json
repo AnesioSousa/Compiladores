@@ -4,6 +4,7 @@
     "has to be an integer",
     "it wasn't declared",
     "has to be a real number",
+    "has to be a number",
     "has to be string",
     "has to be a char",
     "has to be a boolean",
