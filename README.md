@@ -10,6 +10,7 @@
    <code>python -m venv venv</code><br>
    <code>source venv/bin/activate</code><br>
    <code>pip install -r requirements.txt </code>
+   <code>python main.py</code>
 
 # Sobre o projeto:
 

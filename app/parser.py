@@ -13,21 +13,11 @@ class GoatParser:
     capazes de gerar árvores sintáticas partindo de tokens de entrada.
     """
 
-    """
     def __init__(self, file_name, input_sequence=[]):
         self._file_name = file_name
         self._input_sequence = input_sequence
         self._lookahead = self._input_sequence[0]
         self._token_counter = 0
-        self._output = open(f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
-    """
-
-    def __init__(self, input_sequence):
-        self._input_sequence = input_sequence
-        self._lookahead = self._input_sequence[0]
-        self._token_counter = 0
-
-        # Semântico
         self.symbol_table = []
         self.current_scope = "GLOBAL"
         self.last_ide = None
@@ -40,7 +30,8 @@ class GoatParser:
         # expected symbol for type comparison
         self.expected = None
         self.tag_retorno = {'status': False, 'type': 'vazio'}
-        # self.output = open(output_file, 'a', encoding='utf-8')
+        self._output = open(
+            f'./files/{file_name}-saida.txt', 'a', encoding='utf-8')
         self.semanticStatus = True
         with open('semantic_errors.json', 'r', encoding='utf-8') as f:
             self.msg_error = json.load(f)
@@ -109,8 +100,6 @@ class GoatParser:
                     self.match('=')
                     if self._lookahead['token_type'] in ['NRO', 'CAC', 'IDE']:
                         self.assignment_value()
-
-                    # Será que eu to limitando a abertura só de até duas chaves '[['?
                     elif self._lookahead['lexeme'] == '[':
                         self.array()
                     else:
@@ -121,7 +110,6 @@ class GoatParser:
         elif self._lookahead['lexeme'] == 'boolean':
             self.match(self._lookahead['lexeme'])
             if self.ide():
-                # OPTIONAL VALUE TAMBÉM DEIXA ATRIBUIR ARRAYS PARA VARIAVEIS DOS TIPOS STRING E BOOLEAN!
                 self.save_symbol(category="VAR")
                 self.optional_value()
                 self.variable_end()
@@ -133,30 +121,6 @@ class GoatParser:
             self.variable()
         else:
             self.error()
-
-    def for_init(self):
-        if self._lookahead['lexeme'] == '=':
-            self.match('=')
-            return self.check_for_int()
-        else:
-            return False
-
-    def check_for_int(self):
-        lexeme = self._lookahead['lexeme']
-        try:
-            int(lexeme)
-
-            # Se a conversão for bem-sucedida, significa que é um número inteiro
-            self.match(lexeme)
-            return True
-        except ValueError:
-            # Se a conversão falhar, significa que não é um número inteiro
-            # Adicione aqui qualquer tratamento adicional desejado
-            self._output.write(
-                f"Semantic Error: The for statement initialization needs to be an integer! Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n")
-            self.error()
-
-        return False
 
     def variable_same_line(self):
         if self._lookahead['lexeme'] == ',':
@@ -179,7 +143,6 @@ class GoatParser:
             self._lookahead = self.next_token()
             return True
         else:
-            # print(f"expected {symbol}, found {self._lookahead['lexeme']}\n")
             return False
 
     def next_token(self):
@@ -218,7 +181,6 @@ class GoatParser:
     def assignment_value(self):
         symbol = self.get_symbol(self.last_ide)
         self.expected = symbol
-        # typeOperation = (0 if symbol is None else 1)
         if self.ide():
             if self._lookahead['lexeme'] == '.':
                 self.object_value()
@@ -227,7 +189,6 @@ class GoatParser:
                 return True
         elif self._lookahead['token_type'] in ['NRO', 'CAC', 'IDE'] or self._lookahead['lexeme'] in ['true', 'false']:
             if symbol['type'] in ['int', 'real']:
-
                 if self._lookahead['token_type'] == 'NRO':
                     if symbol['type'] == 'int':
                         try:
@@ -248,22 +209,6 @@ class GoatParser:
                 return True
             if self.value():
                 return True
-            """
-            if self._lookahead['token_type'] == 'NRO':
-                if symbol['type'] == 'int':
-                    # compara se o número é igual ao seu equivalente em ponto flutuante para determinar se é um número inteiro ou não.
-                    if int(self._lookahead['lexeme']) == float(self._lookahead['lexeme']):
-                        if self.value():
-                            return True
-                elif symbol['type'] == 'real':
-                    if '.' in self._lookahead['lexeme']:
-                        try:
-                            float(self._lookahead['lexeme'])
-                            if self.value():
-                                return True
-                        except ValueError:
-                            self.semanticError(symbol, type=2)
-            """
         elif self._lookahead['lexeme'] == '[':
             self.array()
             return True
@@ -280,7 +225,6 @@ class GoatParser:
                     return self.assignment_value() and self.constant_same_line()
         else:
             return True
-        # Rever isso aqui!
         return False
 
     def ide(self):
@@ -316,12 +260,11 @@ class GoatParser:
         elif self._lookahead['lexeme'] == 'void':
             self.match('void')
         else:
-            return False  # ERRO
+            return False
 
     def dimension(self):
         if self._lookahead['lexeme'] in ['[']:
             self.match('[')
-            # Tá permitindo float na inicialização?
             self.number()
             if self._lookahead['lexeme'] in [']']:
                 self.match(']')
@@ -370,7 +313,6 @@ class GoatParser:
     def possible_value(self):
         if self.ide():
             self.object_value()
-        # lembrar do porém da token ser boolean acima!
         elif self._lookahead['token_type'] in ['NRO', 'CAC', 'IDE']:
             self.value()
         elif self._lookahead['lexeme'] == '[':
@@ -387,7 +329,6 @@ class GoatParser:
                 ans = self.main_class_content()
                 if self._lookahead['lexeme'] == '}':
                     self.match('}')
-                    # print("Main class content was read successfully")
                     return ans
 
         return False
@@ -678,7 +619,6 @@ class GoatParser:
             self.match(',')
             self.args_list()
 
-    # Rever isso: Const analisa strings sem precisar disso!
     def str(self):
         return True if self._lookahead['token_type'] == 'CAC' else False
 
@@ -721,7 +661,6 @@ class GoatParser:
 
         return True
 
-    # Tirei o "if self.type():" antes do "if self.ide():"
     def parameter(self):
         if self.ide():
             self.function_parameters.append(
@@ -744,8 +683,6 @@ class GoatParser:
                 self.save_symbol('CLASS')
                 self.current_scope = "CLASS_"+self.last_ide
                 self.ide()
-                # self.last_type = self._lookahead['token_type']
-                # Tem que checar pra quando tiver um extendss!
                 self.class_extends()
                 if self._lookahead['lexeme'] == '{':
                     self.match('{')
@@ -866,7 +803,6 @@ class GoatParser:
                 self.expression_sequence_list()
                 return True
 
-    # Rever esse método. Uma parte está só comentada na gramática
     def expression_sequence_list(self):
         if self.expression_sequence():
             return True
@@ -937,7 +873,6 @@ class GoatParser:
             if self.ide():
                 if self._lookahead['lexeme'] == '(':
                     self.match('(')
-                    # self.current_scope = "FUNC_"+self.last_ide
                     function = [self.last_ide, self.last_type]
                     self.parameter()
                     self.last_ide = function[0]
@@ -958,12 +893,6 @@ class GoatParser:
                             elif self._lookahead['lexeme'] == '}':
                                 self.match('}')
                             self.method()
-
-
-##################################################################################################
-##################################################################################################
-# SEMANTICOOOOO
-
 
     def save_symbol(self, category):
         symbol = {
@@ -1031,11 +960,11 @@ class GoatParser:
 
     def semanticError(self, symbol=None, type=1):
         if symbol:
-            print(f"Semantic Error:  {symbol['category']} '{symbol['lexeme']}' " + self.msg_error[type -
-                  1] + f" - number line: {self._lookahead['number_line']} - scope: {symbol['scope']}\n")
+            self._output.write(f"Semantic Error:  {symbol['category']} '{symbol['lexeme']}' " + self.msg_error[type -
+                                                                                                               1] + f" - number line: {self._lookahead['number_line']} - scope: {symbol['scope']}\n")
         else:
-            print(f"Semantic Error:  " +
-                  self.msg_error[type-1] + f" - number line: {self._lookahead['number_line']}\n")
+            self._output.write(f"Semantic Error:  " +
+                               self.msg_error[type-1] + f" - number line: {self._lookahead['number_line']}\n")
         self.semanticStatus = False
 
     def attributionTypeError(self, symbol: dict, receivedType: str = None) -> None:
@@ -1062,7 +991,7 @@ class GoatParser:
 
     def check_ide_as_integer(self):
         symbol = self.get_symbol(self.last_ide)
-        if symbol != None and symbol['type'] != 'inteiro':
+        if symbol != None and symbol['type'] != 'int':
             self.semanticError(symbol, type=3)
 
     def follow_condicional(self):
@@ -1094,22 +1023,12 @@ class GoatParser:
                 break
         return rel_log, art
 
-    def chamadafuncao(self, symbol=None):
-        if symbol:
-            symbol["paran_current"] = 0
-        else:
-            self.semanticError(
-                {'lexeme': self.last_ide, 'category': 'METHOD'}, type=4)
-        if self.lookahead['lexeme'] == '(':
-            self.match('(')
-            return self.paran(symbol)
-        return False
-
     def follow(self, k=1):
         return self.input[self.i+k]
 
 
 if __name__ == '__main__':
+    # Para propósitos de teste
     input_sequence = [
         {'lexeme': 'const', 'token_type': 'IDE', 'number_line': 1},
         {'lexeme': '{', 'token_type': 'DEL', 'number_line': 1},

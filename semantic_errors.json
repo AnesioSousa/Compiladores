@@ -8,13 +8,10 @@
     "has to be string",
     "has to be a char",
     "has to be a boolean",
-    "shouldn't not have his value changed",
-    "não pode haver divisão por zero",
-    "deve ter apenas valores numéricos nesse tipo de operação",
-    "o valor da operação deve ser um inteiro",
-    "atribuição de tipos diferentes",
-    "retorno com tipo diferente",
-    "não possui retorno",
-    "tipo de argumento inválido",
-    "número de argumentos inválidos"
+    "shouldn't have his value changed",
+    "it cannot be a zero division",
+    "this return should have a different type",
+    "it shouldn't be a return",
+    "invalid argument type",
+    "invalid argument number"
   ]
