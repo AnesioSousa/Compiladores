@@ -13,7 +13,7 @@ class GoatParser:
     capazes de gerar árvores sintáticas partindo de tokens de entrada.
     """
 
-    def __init__(self, file_name, input_sequence=[]):
+    def __init__(self, file_name, input_sequence):
         self._file_name = file_name
         self._input_sequence = input_sequence
         self._lookahead = self._input_sequence[0]
@@ -49,15 +49,12 @@ class GoatParser:
                             self.main_class()
         return True
 
-    def error(self):
-        sync_tokens = [';']
-        # self._output.write(f"Syntax Error: Found: '{self._lookahead['lexeme']}', number_line: {self._lookahead['number_line']}\n")
-
+    def error(self, sync_tokens=[';']):
         while (self._lookahead['lexeme'] not in sync_tokens):
-            self._lookahead = self.next_token()
+            self.match(self._lookahead['lexeme'])
             if (self._token_counter == len(self._input_sequence)-1):
                 break
-        self._lookahead = self.next_token()
+        # self._lookahead = self.next_token()
 
     def variable_block(self):
         self.match('variables')
@@ -173,6 +170,12 @@ class GoatParser:
                         if self._lookahead['lexeme'] == ';':
                             self.match(';')
                             return self.constant()
+                        else:
+                            sync_tokens = [';', 'int', 'real', 'string']
+                            self._output.write(
+                                f"Syntax Error: error: expected ',' or ';' before declaring other variables, number_line: {int(self._lookahead['number_line'])-1}\n")
+                            self.error(sync_tokens=sync_tokens)
+
         elif self._lookahead['lexeme'] == '}':
             return True
 
@@ -211,6 +214,11 @@ class GoatParser:
                 return True
         elif self._lookahead['lexeme'] == '[':
             self.array()
+            return True
+        else:
+            self._output.write(
+                f"Syntax Error: error: expected expression before '{self._lookahead['lexeme']}' token, number_line: {self._lookahead['number_line']}\n")
+            self.error(sync_tokens=[';', 'int', 'real', 'string'])
             return True
 
         return False

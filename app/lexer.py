@@ -112,9 +112,23 @@ class LexicalAnalyser:
             return 26
 
     def __generate_output_files(self):
-        self.__token_list.append('\n')
+        # Pra que isso?
+        # self.__token_list.append('\n')
 
         self.__token_list.extend(self.__error_list.__iter__())
+
+        with open("./files/outputs/saida.txt", 'w') as f:
+            # f.write('\n')
+            for token in self.__token_list:
+                f.write(
+                    f"{token['number_line']} {token['token_type']} {token['lexeme']}\n")
+            """
+            f.write("\n")
+            for token in self.__error_list:
+                f.write(
+                    f"{token['number_line']} {token['token_type']} {token['lexeme']}\n")
+            
+            """
 
         return self.__token_list
 

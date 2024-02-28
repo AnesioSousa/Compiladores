@@ -16,7 +16,7 @@ def main():
 
         myParser.program()
         if myParser.semanticStatus:
-            print("Sucesso")
+            print(f"File[{file_name}]-Sucesso")
 
 
 main()
