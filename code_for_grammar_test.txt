@@ -1,0 +1,70 @@
+const {
+    int MAX = 10, MIN = 0;
+}
+
+variables {
+    int a = 10, b = 11;
+    real c = 10.2;
+    int[10] teste = [1,2,3,4];
+    int[10][10] teste = [[1,2], [2,4]];
+}
+
+class Carro {
+    variables {
+        int a = 10, b = 11;
+    }
+
+    constructor (a, c){
+        this.a = a;
+        this.b = 10;
+        this.c = c;
+    }
+
+    methods{
+        void test(){
+
+        }
+
+        int teste2(a){
+            return 0;
+        }
+
+        int teste3(b){
+            for(int i=0; i < MAX; i++){
+                  print(i);
+            }
+            return true;
+        }
+    }
+}
+
+class Corola extends Carro {
+      variables {
+          int a = 10, b = 11;
+      }
+  
+      constructor (a, c) {
+          this.a = a;
+          this.b = 10;
+          this.c = c;
+      }
+}
+
+objects {
+      Corola corola1 = Carro->constructor(a, b), corola2 = Carro->constructor(c, b);
+}
+
+class main {
+      for(int i=0; i < MAX; i++){
+          if(i==5) then {
+              i=4;
+          }else{
+              i=10;
+          }
+      }
+      print("teste");
+      read(a);
+}
+
+
+}
